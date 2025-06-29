@@ -12,7 +12,7 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
-      "@prisma/*": ["src/generated/prisma/*"]
+      "@prisma/*": ["prisma/generated/*"]
     },
     "incremental": true,
     "skipLibCheck": true,
