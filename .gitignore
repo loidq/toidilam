@@ -56,5 +56,5 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Prisma generated client (nếu tùy chỉnh output)
-prisma/generated/
+generated/
 prisma/migrations/
