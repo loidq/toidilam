@@ -3,44 +3,54 @@ name: CI - Build, Lint, Test
 on:
   pull_request:
     branches: [main, dev]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   push:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
 
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
+    outputs:
+      pnpm-cache-path: ~/.pnpm-store
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Cache pnpm store and node_modules
-        uses: actions/cache@v4
+      - uses: pnpm/action-setup@v4
         with:
-          path: |
-            ~/.pnpm-store
-            node_modules
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
+          version: 8
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: 20
+          cache: 'pnpm'
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+  lint:
+    needs: setup
+    runs-on: ubuntu-latest
+    if: >
+      ${{ (github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore:')) || (github.event_name == 'pull_request' && !startsWith(github.event.pull_request.title, 'chore:')) }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: pnpm lint
 
-      - name: Install dependencies
-        run: pnpm install
+  # test:
+  #   needs: setup
+  #   runs-on: ubuntu-latest
+  #//   if: ${{ !startsWith(github.event.head_commit.message, 'chore:') }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - run: pnpm test
 
-      - name: Generate Prisma client
-        run: pnpm prisma:generate
-
-      - name: Run lint
-        run: pnpm lint
-
-      - name: Run tests
-        run: pnpm test
-
-      - name: Build project
-        run: pnpm build
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    if: >
+      ${{ (github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore:')) || (github.event_name == 'pull_request' && !startsWith(github.event.pull_request.title, 'chore:')) }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: pnpm build

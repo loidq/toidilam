@@ -50,40 +50,40 @@ export class UserPrismaRepository
 
   // Domain specific methods
   async findById(id: string, options?: UserBaseQueryOptions): Promise<UserEntity | null> {
-    return this.findUnique({ id }, options)
+    return await this.findUnique({ id }, options)
   }
 
   async findByEmail(email: string, options?: UserBaseQueryOptions): Promise<UserEntity | null> {
-    return this.findUnique({ email }, options)
+    return await this.findUnique({ email }, options)
   }
 
   async findOne(options?: UserFindQueryOptions): Promise<UserEntity | null> {
-    return this.findFirst(options)
+    return await this.findFirst(options)
   }
 
   async createUser(user: UserEntity): Promise<UserEntity> {
     const prismaData = this.toPrismaCreate(user)
-    return this.create(prismaData)
+    return await this.create(prismaData)
   }
 
   async updateUser(user: UserEntity): Promise<UserEntity> {
     const prismaData = this.toPrismaUpdate(user)
-    return this.update({ id: user.id }, prismaData)
+    return await this.update({ id: user.id }, prismaData)
   }
 
   async softDeleteUser(id: string): Promise<boolean> {
-    return this.softDelete({ id })
+    return await this.softDelete({ id })
   }
   async deleteUser(id: string): Promise<boolean> {
-    return this.delete({ id })
+    return await this.delete({ id })
   }
 
   async existsById(id: string): Promise<boolean> {
-    return this.exists({ id })
+    return await this.exists({ id })
   }
 
   async existsByEmail(email: string): Promise<boolean> {
-    return this.exists({ email })
+    return await this.exists({ email })
   }
 
   // Extended methods using query options
