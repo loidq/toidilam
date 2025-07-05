@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated"
+  // output   = "../generated"
 }
 
 datasource db {
@@ -156,14 +156,13 @@ model User {
   id                          String                       @id @default(uuid(7)) @db.Uuid
   email                       String                       @unique
   password                    String
-  name                        String?
-  status                      UserStatus?
+  name                        String
+  status                      UserStatus
   country                     String?
   bio                         String?
   photo                       String?
   dob                         DateTime? // Date of Birth
-  resetToken                  String?
-  settings                    Json?                        @default("{}")
+  settings                    Json?
   members                     Member[]
   organizationMembers         OrganizationMember[]
   taskAssignees               TaskAssignee[]
@@ -171,6 +170,8 @@ model User {
   stats                       Stat[]
   timers                      Timer[]
   favorites                   Favorite[]
+  deletedAt                   DateTime?
+  isDeleted                   Boolean                      @default(false)
   createdAt                   DateTime                     @default(now())
   createdBy                   String?                      @db.Uuid
   updatedAt                   DateTime                     @updatedAt

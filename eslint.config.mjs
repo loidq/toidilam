@@ -7,7 +7,7 @@ import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs', '**/dist/**', '**/node_modules/**'],
+    ignores: ['eslint.config.mjs', '**/dist/**', '**/node_modules/**', '**/prisma/**'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -82,12 +82,12 @@ export default tseslint.config(
           selector: 'typeLike',
           format: ['PascalCase'],
         },
-        {
-          selector: 'variable',
-          modifiers: ['const'],
-          types: ['boolean', 'string', 'number'],
-          format: ['UPPER_CASE'],
-        },
+        // {
+        //   selector: 'variable',
+        //   modifiers: ['const'],
+        //   types: ['boolean', 'string', 'number'],
+        //   format: ['UPPER_CASE'],
+        // },
       ],
       'import/order': [
         'warn',
