@@ -1,0 +1,617 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  INACTIVE
+  ACTIVE
+}
+
+enum MemberRole {
+  GUEST
+  MEMBER
+  MANAGER
+  LEADER
+}
+
+enum OrganizationRole {
+  ADMIN
+  MANAGER
+  MEMBER
+}
+
+enum InvitationStatus {
+  REJECTED
+  ACCEPTED
+  INVITING
+}
+
+enum ProjectViewType {
+  LIST
+  BOARD
+  CALENDAR
+  TIMELINE
+  GOAL
+  TEAM
+  ACTIVITY
+  DASHBOARD
+  GRID
+}
+
+enum TaskType {
+  TASK
+  BUG
+  NEW_FEATURE
+  IMPROVEMENT
+}
+
+enum TaskPriority {
+  URGENT
+  HIGH
+  NORMAL
+  LOW
+}
+
+enum FieldType {
+  NUMBER
+  TEXT
+  DATE
+  SELECT
+  MULTISELECT
+  CHECKBOX
+  URL
+  EMAIL
+  FILES
+  PHONE
+  PERSON
+  CREATED_AT
+  CREATED_BY
+  UPDATED_AT
+  UPDATED_BY
+}
+
+enum StatusType {
+  DONE
+  INPROCESS
+  TODO
+}
+
+enum OrgStorageType {
+  AWS_S3
+  DIGITAL_OCEAN_S3
+}
+
+enum FileType {
+  FILE
+  FOLDER
+}
+
+enum FileOwnerType {
+  USER
+  TASK
+  DISCUSSION
+  DOCUMENT
+}
+
+enum StatType {
+  PROJECT_TASK_BY_DAY
+  MEMBER_TASK_BY_DAY
+}
+
+enum DashboardComponentType {
+  LINE
+  SUMMARY
+  PIE
+  LISTTAB
+  LIST
+  COLUMN
+  BURNDOWN
+  BURNUP
+}
+
+enum ActivityType {
+  TASK_CREATED
+  // TASK_CHANGED // change due date, task title, description
+  TASK_TITLE_CHANGED
+  TASK_DESC_CHANGED
+  TASK_DUEDATE_CHANGED
+
+  TASK_ASSIGNEE_ADDED
+  TASK_ASSIGNEE_REMOVED
+
+  TASK_STATUS_CREATED
+  TASK_STATUS_CHANGED
+
+  TASK_PROGRESS_CHANGED
+  TASK_PRIORITY_CHANGED
+  TASK_POINT_CHANGED
+  TASK_VISION_CHANGED
+
+  TASK_COMMENT_CREATED
+  TASK_COMMENT_CHANGED
+  TASK_COMMENT_REMOVED
+
+  TASK_ATTACHMENT_ADDED
+  TASK_ATTACHMENT_REMOVED
+}
+
+enum ActivityTargetType {
+  TASK
+  PROJECT
+}
+
+model User {
+  id                          String                       @id @default(uuid(7)) @db.Uuid
+  email                       String                       @unique
+  password                    String
+  name                        String
+  status                      UserStatus
+  country                     String?
+  bio                         String?
+  photo                       String?
+  dob                         DateTime? // Date of Birth
+  settings                    Json?
+  members                     Member[]
+  organizationMembers         OrganizationMember[]
+  taskAssignees               TaskAssignee[]
+  projectSettingNotifications ProjectSettingNotification[]
+  stats                       Stat[]
+  timers                      Timer[]
+  favorites                   Favorite[]
+  deletedAt                   DateTime?
+  isDeleted                   Boolean                      @default(false)
+  createdAt                   DateTime                     @default(now())
+  createdBy                   String?                      @db.Uuid
+  updatedAt                   DateTime                     @updatedAt
+  updatedBy                   String?                      @db.Uuid
+}
+
+model Organization {
+  id                  String               @id @default(uuid(7)) @db.Uuid
+  name                String
+  slug                String               @unique
+  cover               String?
+  avatar              String?
+  maxStorageSize      Int?
+  desc                String?
+  projects            Project[]
+  visions             Vision[]
+  organizationMembers OrganizationMember[]
+  taskAutomations     TaskAutomation[]
+  schedulers          Scheduler[]
+  fileStorages        FileStorage[]
+  stats               Stat[]
+  applications        Application[]
+  favorites           Favorite[]
+  createdAt           DateTime             @default(now())
+  createdBy           String               @db.Uuid
+  updatedAt           DateTime             @updatedAt
+  updatedBy           String?              @db.Uuid
+
+  @@index([name])
+}
+
+model OrganizationMember {
+  id             String           @id @default(uuid(7)) @db.Uuid
+  organizationId String           @db.Uuid
+  userId         String           @db.Uuid
+  status         InvitationStatus
+  role           OrganizationRole
+  createdAt      DateTime         @default(now())
+  createdBy      String?          @db.Uuid
+  updatedAt      DateTime         @updatedAt
+  updatedBy      String?          @db.Uuid
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  user           User             @relation(fields: [userId], references: [id])
+
+  @@unique([organizationId, userId])
+}
+
+model OrganizationStorage {
+  id             String         @id @default(uuid(7)) @db.Uuid
+  type           OrgStorageType
+  config         Json
+  organizationId String         @db.Uuid
+  createdAt      DateTime       @default(now())
+  createdBy      String?        @db.Uuid
+  updatedAt      DateTime       @updatedAt
+  updatedBy      String?        @db.Uuid
+}
+
+model Member {
+  id        String     @id @default(uuid(7)) @db.Uuid
+  role      MemberRole
+  userId    String     @db.Uuid
+  projectId String     @db.Uuid
+  createdAt DateTime   @default(now())
+  createdBy String?    @db.Uuid
+  updatedAt DateTime   @updatedAt
+  updatedBy String?    @db.Uuid
+  project   Project    @relation(fields: [projectId], references: [id])
+  user      User       @relation(fields: [userId], references: [id])
+}
+
+model Project {
+  id                          String                       @id @default(uuid(7)) @db.Uuid
+  name                        String
+  projectView                 ProjectView?
+  field                       Field[]
+  vision                      Vision[]
+  projectSettingNotifications ProjectSettingNotification[]
+  members                     Member[]
+  grid                        Grid[]
+  taskStatuses                TaskStatus[]
+  taskPoints                  TaskPoint[]
+  tasks                       Task[]
+  tags                        Tag[]
+  taskAutomations             TaskAutomation[]
+  schedulers                  Scheduler[]
+  fileStorages                FileStorage[]
+  stats                       Stat[]
+  comments                    Comment[]
+  dashboard                   Dashboard[]
+  organizationId              String                       @db.Uuid
+  desc                        String?
+  cover                       String?
+  icon                        String?
+  isArchived                  Boolean                      @default(false)
+  // these count settings is used for counting the number of tasks by days
+  countMemberTask             Boolean                      @default(false)
+  countProjectTask            Boolean                      @default(true)
+  createdAt                   DateTime                     @default(now())
+  createdBy                   String?                      @db.Uuid
+  updatedAt                   DateTime                     @updatedAt
+  updatedBy                   String?                      @db.Uuid
+  organization                Organization                 @relation(fields: [organizationId], references: [id])
+}
+
+model ProjectView {
+  id        String          @id @default(uuid(7)) @db.Uuid
+  name      String?
+  type      ProjectViewType
+  onlyMe    Boolean         @default(false)
+  icon      String?
+  projectId String?         @unique @db.Uuid
+  order     Int?
+  data      Json?           @default("{}")
+  createdAt DateTime        @default(now())
+  createdBy String?         @db.Uuid
+  updatedAt DateTime        @updatedAt
+  updatedBy String?         @db.Uuid
+  project   Project?        @relation(fields: [projectId], references: [id])
+}
+
+model ProjectSettingNotification {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  userId      String   @db.Uuid
+  projectId   String   @db.Uuid
+  taskChanges Boolean  @default(false)
+  remind      Boolean  @default(false)
+  overdue     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  createdBy   String?  @db.Uuid
+  user        User     @relation(fields: [userId], references: [id])
+  project     Project  @relation(fields: [projectId], references: [id])
+}
+
+model Task {
+  id               String          @id @default(uuid(7)) @db.Uuid
+  title            String
+  desc             String?
+  dueDate          DateTime?
+  order            Int
+  type             TaskType?       @default(TASK)
+  taskChecklists   TaskChecklist[]
+  checklistDone    Int?
+  checklistTodos   Int?
+  comments         Comment[]
+  timers           Timer[]
+  cover            String?
+  plannedStartDate DateTime?
+  plannedDueDate   DateTime?
+  startDate        DateTime?
+  projectId        String          @db.Uuid
+  priority         TaskPriority?
+  taskStatusId     String?         @db.Uuid
+  taskTags         TaskTag[]
+  taskAssignees    TaskAssignee[]
+  fileStorages     FileStorage[]
+  parentTaskId     String?         @db.Uuid
+  parentTask       Task?           @relation("TaskToSubtasks", fields: [parentTaskId], references: [id])
+  subTasks         Task[]          @relation("TaskToSubtasks")
+  progress         Int?
+  done             Boolean         @default(false)
+  // do not store `point` as objectID, cuz we just need to fill the point value
+  taskPoint        Int?
+  customFields     Json?           @default("{}")
+  createdAt        DateTime        @default(now())
+  createdBy        String?         @db.Uuid
+  updatedAt        DateTime        @updatedAt
+  updatedBy        String?         @db.Uuid
+  project          Project         @relation(fields: [projectId], references: [id])
+  taskStatus       TaskStatus?     @relation(fields: [taskStatusId], references: [id])
+
+  @@index([parentTaskId])
+}
+
+model TaskStatus {
+  id        String     @id @default(uuid(7)) @db.Uuid
+  name      String
+  color     String
+  order     Int
+  projectId String     @db.Uuid
+  tasks     Task[]
+  type      StatusType @default(TODO)
+  project   Project    @relation(fields: [projectId], references: [id])
+}
+
+model TaskAssignee {
+  taskId     String   @db.Uuid
+  userId     String   @db.Uuid
+  assignedAt DateTime @default(now())
+  task       Task     @relation(fields: [taskId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@id([taskId, userId])
+}
+
+model TaskChecklist {
+  id     String    @id @default(uuid(7)) @db.Uuid
+  title  String
+  order  Int
+  taskId String    @db.Uuid
+  task   Task      @relation(fields: [taskId], references: [id])
+  done   Boolean?  @default(false)
+  doneAt DateTime?
+}
+
+model TaskPoint {
+  id        String  @id @default(uuid(7)) @db.Uuid
+  point     Int
+  projectId String  @db.Uuid
+  icon      String?
+  project   Project @relation(fields: [projectId], references: [id])
+}
+
+model TaskAutomation {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  organizationId String       @db.Uuid
+  projectId      String       @db.Uuid
+  when           Json
+  then           Json
+  createdAt      DateTime     @default(now())
+  createdBy      String?      @db.Uuid
+  updatedAt      DateTime     @updatedAt
+  updatedBy      String?      @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  project        Project      @relation(fields: [projectId], references: [id])
+}
+
+model Vision {
+  id             String        @id @default(uuid(7)) @db.Uuid
+  name           String
+  startDate      DateTime?
+  dueDate        DateTime?
+  progress       Int?
+  projectId      String?       @db.Uuid
+  organizationId String?       @db.Uuid
+  parentId       String?       @db.Uuid
+  createdAt      DateTime      @default(now())
+  createdBy      String?
+  updatedAt      DateTime      @updatedAt
+  updatedBy      String?
+  project        Project?      @relation(fields: [projectId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  parent         Vision?       @relation("VisionParent", fields: [parentId], references: [id])
+  children       Vision[]      @relation("VisionParent")
+
+  @@index([parentId])
+}
+
+model Field {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  projectId String    @db.Uuid
+  name      String
+  type      FieldType
+  icon      String?
+  hidden    Boolean   @default(false)
+  width     Int
+  order     Int
+  desc      String?
+  data      Json?     @default("{}")
+  config    Json?     @default("{}")
+  project   Project   @relation(fields: [projectId], references: [id])
+}
+
+model Grid {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  title        String
+  cover        String?
+  projectId    String   @db.Uuid
+  customFields Json?    @default("{}")
+  isDeleted    Boolean? @default(false)
+  createdAt    DateTime @default(now())
+  createdBy    String?  @db.Uuid
+  updatedAt    DateTime @updatedAt
+  updatedBy    String?  @db.Uuid
+  project      Project  @relation(fields: [projectId], references: [id])
+}
+
+model Tag {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  name      String
+  color     String
+  taskTags  TaskTag[]
+  projectId String    @db.Uuid
+  project   Project   @relation(fields: [projectId], references: [id])
+}
+
+model TaskTag {
+  taskId String @db.Uuid
+  tagId  String @db.Uuid
+  task   Task   @relation(fields: [taskId], references: [id])
+  tag    Tag    @relation(fields: [tagId], references: [id])
+
+  @@id([taskId, tagId])
+}
+
+model Scheduler {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  organizationId String       @db.Uuid
+  projectId      String       @db.Uuid
+  cronId         String?
+  trigger        Json
+  action         Json
+  createdAt      DateTime     @default(now())
+  createdBy      String?      @db.Uuid
+  updatedAt      DateTime     @updatedAt
+  updatedBy      String?      @db.Uuid
+  project        Project      @relation(fields: [projectId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+}
+
+model FileStorage {
+  id             String         @id @default(uuid(7)) @db.Uuid
+  organizationId String?        @db.Uuid
+  projectId      String?        @db.Uuid
+  taskId         String?        @db.Uuid
+  name           String
+  keyName        String
+  type           FileType
+  url            String?
+  size           Float?
+  mimeType       String?
+  parentId       String? //
+  owner          String?        @db.Uuid
+  ownerType      FileOwnerType?
+  isDeleted      Boolean?       @default(false)
+  createdAt      DateTime       @default(now())
+  createdBy      String?        @db.Uuid
+  deletedAt      DateTime?
+  deletedBy      String?        @db.Uuid
+  organization   Organization?  @relation(fields: [organizationId], references: [id])
+  project        Project?       @relation(fields: [projectId], references: [id])
+  task           Task?          @relation(fields: [taskId], references: [id])
+}
+
+model Stat {
+  id             String        @id @default(uuid(7)) @db.Uuid
+  type           StatType
+  data           Json?         @default("{}")
+  userId         String?       @db.Uuid
+  projectId      String?       @db.Uuid
+  organizationId String?       @db.Uuid
+  year           Int
+  month          Int
+  date           Int
+  updatedAt      DateTime?     @updatedAt
+  user           User?         @relation(fields: [userId], references: [id])
+  project        Project?      @relation(fields: [projectId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+}
+
+model Dashboard {
+  id                  String               @id @default(uuid(7)) @db.Uuid
+  dashboardComponents DashboardComponent[]
+  title               String?              @default("Untitled")
+  projectId           String?              @db.Uuid
+  isDefault           Boolean?             @default(false)
+  project             Project?             @relation(fields: [projectId], references: [id])
+}
+
+model DashboardComponent {
+  id          String                  @id @default(uuid(7)) @db.Uuid
+  dashboardId String?                 @db.Uuid
+  title       String?
+  type        DashboardComponentType?
+  config      Json?
+  x           Int?                    @default(0)
+  y           Int?                    @default(0)
+  width       Int?                    @default(3)
+  height      Int?                    @default(1)
+  createdAt   DateTime                @default(now())
+  createdBy   String?
+  deletedAt   DateTime?               @default(now())
+  deletedBy   String?
+  dashboard   Dashboard?              @relation(fields: [dashboardId], references: [id])
+}
+
+model Activity {
+  id         String             @id @default(uuid(7)) @db.Uuid
+  targetId   String             @db.Uuid
+  targetType ActivityTargetType
+  type       ActivityType
+  data       Json?              @default("{}")
+  createdAt  DateTime           @default(now())
+  createdBy  String             @db.Uuid
+  updatedAt  DateTime?          @updatedAt
+  updatedBy  String?            @db.Uuid
+}
+
+model Comment {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  taskId    String   @db.Uuid
+  projectId String   @db.Uuid
+  content   String
+  createdAt DateTime @default(now())
+  createdBy String   @db.Uuid
+  updatedAt DateTime @updatedAt
+  task      Task     @relation(fields: [taskId], references: [id])
+  project   Project  @relation(fields: [projectId], references: [id])
+}
+
+model Application {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  name           String
+  description    String?
+  clientId       String       @unique
+  clientSecret   String
+  organizationId String       @db.Uuid
+  scopes         String[] // Array of permitted scopes
+  createdAt      DateTime?
+  createdBy      String?      @db.Uuid
+  updatedAt      DateTime?    @updatedAt
+  updatedBy      String?      @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id])
+}
+
+model Timer {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  taskId    String    @db.Uuid
+  userId    String    @db.Uuid
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  task      Task      @relation(fields: [taskId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+model Favorite {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  name           String
+  icon           String
+  link           String
+  userId         String       @db.Uuid
+  organizationId String       @db.Uuid
+  type           String
+  createdAt      DateTime     @default(now())
+  createdBy      String?      @db.Uuid
+  updatedAt      DateTime?    @updatedAt
+  updatedBy      String?      @db.Uuid
+  user           User         @relation(fields: [userId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+}

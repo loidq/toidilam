@@ -6,13 +6,15 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"],
-      "@prisma/*": ["src/generated/prisma/*"]
+      "@/*": ["src/*"]
+      // "@prisma/*": ["./generated/*"],
+      // "@user/*": ["src/modules/user/*"]
     },
     "incremental": true,
     "skipLibCheck": true,
