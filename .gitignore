@@ -67,3 +67,4 @@ src/modules/user/domain/repositories/test.user.repository.ts
 src/modules/user/infrastructure/repositories/test.ts
 # test files
 
+src/infrastructure/prisma/migrations
