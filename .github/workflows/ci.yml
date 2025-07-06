@@ -27,28 +27,34 @@ jobs:
           cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
+
   lint:
     needs: setup
     runs-on: ubuntu-latest
     if: >
-      ${{ (github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore:')) || (github.event_name == 'pull_request' && !startsWith(github.event.pull_request.title, 'chore:')) }}
+      ${{ (github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore:')) || 
+         (github.event_name == 'pull_request' && !startsWith(github.event.pull_request.title, 'chore:')) }}
     steps:
       - uses: actions/checkout@v4
       - run: pnpm lint
-
-  # test:
-  #   needs: setup
-  #   runs-on: ubuntu-latest
-  #//   if: ${{ !startsWith(github.event.head_commit.message, 'chore:') }}
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - run: pnpm test
 
   build:
     needs: setup
     runs-on: ubuntu-latest
     if: >
-      ${{ (github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore:')) || (github.event_name == 'pull_request' && !startsWith(github.event.pull_request.title, 'chore:')) }}
+      ${{ (github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore:')) || 
+         (github.event_name == 'pull_request' && !startsWith(github.event.pull_request.title, 'chore:')) }}
     steps:
       - uses: actions/checkout@v4
       - run: pnpm build
+
+  # Uncomment and enable when you want to run tests
+  # test:
+  #   needs: setup
+  #   runs-on: ubuntu-latest
+  #   if: >
+  #     ${{ (github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore:')) ||
+  #        (github.event_name == 'pull_request' && !startsWith(github.event.pull_request.title, 'chore:')) }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - run: pnpm test
