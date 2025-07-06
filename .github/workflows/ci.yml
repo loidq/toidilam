@@ -4,51 +4,67 @@ on:
   pull_request:
     branches: [main, dev]
     paths-ignore:
-      - '**.md'
+      - '**/*.md'
       - 'docs/**'
   push:
     paths-ignore:
-      - '**.md'
+      - '**/*.md'
       - 'docs/**'
 
 jobs:
   setup:
     runs-on: ubuntu-latest
-    outputs:
-      pnpm-cache-path: ~/.pnpm-store
     steps:
       - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
 
-      - run: pnpm install --frozen-lockfile
+      - uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
   lint:
     needs: setup
     runs-on: ubuntu-latest
     if: >
-      ${{ (github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore:')) || 
+      ${{ (github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore:')) ||
          (github.event_name == 'pull_request' && !startsWith(github.event.pull_request.title, 'chore:')) }}
     steps:
       - uses: actions/checkout@v4
-      - run: pnpm lint
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+
+      - name: Run lint
+        run: pnpm lint
 
   build:
     needs: setup
     runs-on: ubuntu-latest
     if: >
-      ${{ (github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore:')) || 
+      ${{ (github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore:')) ||
          (github.event_name == 'pull_request' && !startsWith(github.event.pull_request.title, 'chore:')) }}
     steps:
       - uses: actions/checkout@v4
-      - run: pnpm build
 
-  # Uncomment and enable when you want to run tests
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+
+      - name: Run build
+        run: pnpm build
+
   # test:
   #   needs: setup
   #   runs-on: ubuntu-latest
@@ -57,4 +73,13 @@ jobs:
   #        (github.event_name == 'pull_request' && !startsWith(github.event.pull_request.title, 'chore:')) }}
   #   steps:
   #     - uses: actions/checkout@v4
-  #     - run: pnpm test
+
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20
+  #         cache: 'pnpm'
+
+  #     - uses: pnpm/action-setup@v4
+
+  #     - name: Run tests
+  #       run: pnpm test
