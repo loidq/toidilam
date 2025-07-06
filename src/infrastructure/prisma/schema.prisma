@@ -210,7 +210,7 @@ model OrganizationMember {
   status         InvitationStatus
   role           OrganizationRole
   createdAt      DateTime         @default(now())
-  createdBy      String?          @db.Uuid
+  createdBy      String           @db.Uuid
   updatedAt      DateTime         @updatedAt
   updatedBy      String?          @db.Uuid
   organization   Organization     @relation(fields: [organizationId], references: [id])

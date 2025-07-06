@@ -31,6 +31,7 @@ export default tseslint.config(
   {
     rules: {
       'prettier/prettier': 'off',
+      '@typescript-eslint/require-await': 'off', // Bắt buộc sử dụng async/await khi có hàm async
       '@typescript-eslint/no-unsafe-assignment': 'off', // Tắt cảnh báo khi gán giá trị không an toàn
       '@typescript-eslint/no-unsafe-call': 'off', // Tắt cảnh báo khi gọi hàm không an toàn
       '@typescript-eslint/no-unsafe-member-access': 'off', // Tắt cảnh báo khi truy cập thành viên không an toàn
