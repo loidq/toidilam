@@ -13,7 +13,6 @@ export class GetOrgQueryHandler implements IQueryHandler<GetOrgQuery> {
   async execute(command: GetOrgQuery): Promise<OrgEntity | null> {
     const { id } = command
     const org = await this.orgRepository.findById(id)
-    console.log('test', org)
     return org
   }
 }
