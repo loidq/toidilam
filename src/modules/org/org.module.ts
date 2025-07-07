@@ -14,6 +14,7 @@ import {
   GetOrgQueryHandler,
   GetUserInvitationsQueryHandler,
 } from './application/queries/handlers/'
+import { OrganizationRoleGuard } from './domain/guards'
 import { OrgPrismaRepository } from './infrastructure/repositories/org-prisma.repository'
 import { OrgMemberPrismaRepository } from './infrastructure/repositories/orgMember-prisma.repository'
 import { OrgController } from './presentation/controllers/org.controller'
@@ -31,7 +32,7 @@ const QUERY_HANDLERS = [GetOrgQueryHandler, GetAllOrgsQueryHandler, GetUserInvit
   providers: [
     ...QUERY_HANDLERS,
     ...COMMAND_HANDLERS,
-    // OrgMemberPrismaRepository,
+    OrganizationRoleGuard,
     {
       provide: 'ORG_REPOSITORY',
       useClass: OrgPrismaRepository,
@@ -45,6 +46,6 @@ const QUERY_HANDLERS = [GetOrgQueryHandler, GetAllOrgsQueryHandler, GetUserInvit
       useClass: UserPrismaRepository,
     },
   ],
-  exports: [],
+  exports: [OrganizationRoleGuard],
 })
 export class OrgModule {}

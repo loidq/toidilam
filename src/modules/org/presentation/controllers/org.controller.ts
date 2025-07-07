@@ -28,6 +28,10 @@ import {
 import { RespondInvitationDto } from '../../application/dtos/respond-invitation.dto'
 import { UpdateOrgDto } from '../../application/dtos/update-org.dto'
 import { GetAllOrgsQuery, GetOrgQuery, GetUserInvitationsQuery } from '../../application/queries'
+import { OrgMember, OrgRoles } from '../../domain/decorators'
+import { OrgRole } from '../../domain/entities/org.entity'
+import { OrgMemberEntity } from '../../domain/entities/orgMember.entity'
+import { OrganizationRoleGuard } from '../../domain/guards'
 
 @ApiTags('Organizations')
 @ApiBearerAuth()
@@ -95,6 +99,8 @@ export class OrgController {
 
   // PUT /orgs/:orgId - Update specific organization
   @Put(':orgId')
+  @UseGuards(OrganizationRoleGuard)
+  @OrgRoles(OrgRole.ADMIN) // Only organization admins can update organization settings
   @ApiOperation({ summary: 'Update organization' })
   @ApiResponse({
     status: 200,
@@ -103,14 +109,13 @@ export class OrgController {
   })
   async updateOrg(
     @Param('orgId') orgId: string,
-    @Req() req: Request,
+    @OrgMember() orgMember: OrgMemberEntity,
     @Body() updateOrgDto: UpdateOrgDto,
   ): Promise<any> {
-    const { id: updatedBy } = req.user as IJwtPayload
     const { name, slug, desc, cover, avatar, maxStorageSize } = updateOrgDto
     const updateOrgCommand = new UpdateOrgCommand(
       orgId, // Use param instead of body
-      updatedBy,
+      orgMember.userId, // Use orgMember.userId from authorization guard
       name,
       slug,
       desc,
@@ -125,6 +130,8 @@ export class OrgController {
 
   // POST /orgs/:orgId/members/invite - Invite member to specific organization
   @Post(':orgId/members/invite')
+  @UseGuards(OrganizationRoleGuard)
+  @OrgRoles(OrgRole.ADMIN, OrgRole.MANAGER) // Admins and managers can invite members
   @ApiOperation({ summary: 'Invite member to organization' })
   @ApiResponse({
     status: 201,
@@ -133,13 +140,20 @@ export class OrgController {
   })
   async inviteMember(
     @Param('orgId') orgId: string,
-    @Req() req: Request,
+    @OrgMember() orgMember: OrgMemberEntity,
     @Body() inviteMemberDto: InviteMemberDto,
   ): Promise<any> {
-    const { id: invitedBy } = req.user as IJwtPayload
     const { userId, role } = inviteMemberDto
 
-    const inviteMemberCommand = new InviteMemberCommand(orgId, userId, invitedBy, role)
+    // Additional business rule: only admins can invite other admins/managers
+    if ((role === OrgRole.ADMIN || role === OrgRole.MANAGER) && orgMember.role !== OrgRole.ADMIN) {
+      return this.responseBuilder.error(
+        'Only administrators can invite users with admin or manager roles',
+        '403',
+      )
+    }
+
+    const inviteMemberCommand = new InviteMemberCommand(orgId, userId, orgMember.userId, role)
     const invitation = await this.commandBus.execute(inviteMemberCommand)
 
     return this.responseBuilder.success(invitation, 'Member invited successfully')
@@ -147,6 +161,8 @@ export class OrgController {
 
   // POST /orgs/:orgId/members/invite-by-email - Invite member by email to specific organization
   @Post(':orgId/members/invite-by-email')
+  @UseGuards(OrganizationRoleGuard)
+  @OrgRoles(OrgRole.ADMIN, OrgRole.MANAGER) // Admins and managers can invite members
   @ApiOperation({ summary: 'Invite member to organization by email' })
   @ApiResponse({
     status: 201,
@@ -155,13 +171,25 @@ export class OrgController {
   })
   async inviteMemberByEmail(
     @Param('orgId') orgId: string,
-    @Req() req: Request,
+    @OrgMember() orgMember: OrgMemberEntity,
     @Body() inviteMemberByEmailDto: InviteMemberByEmailDto,
   ): Promise<any> {
-    const { id: invitedBy } = req.user as IJwtPayload
     const { email, role } = inviteMemberByEmailDto
 
-    const inviteMemberByEmailCommand = new InviteMemberByEmailCommand(orgId, email, invitedBy, role)
+    // Additional business rule: only admins can invite other admins/managers
+    if ((role === OrgRole.ADMIN || role === OrgRole.MANAGER) && orgMember.role !== OrgRole.ADMIN) {
+      return this.responseBuilder.error(
+        'Only administrators can invite users with admin or manager roles',
+        '403',
+      )
+    }
+
+    const inviteMemberByEmailCommand = new InviteMemberByEmailCommand(
+      orgId,
+      email,
+      orgMember.userId,
+      role,
+    )
     const invitation = await this.commandBus.execute(inviteMemberByEmailCommand)
 
     return this.responseBuilder.success(invitation, 'Member invited by email successfully')

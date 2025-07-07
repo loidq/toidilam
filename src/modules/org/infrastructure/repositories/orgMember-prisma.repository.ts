@@ -32,7 +32,7 @@ export class OrgMemberPrismaRepository
   implements IOrgMemberRepository
 {
   constructor(prismaService: PrismaService) {
-    super(prismaService, 'Org')
+    super(prismaService, 'OrganizationMember')
   }
 
   // Implement abstract mapper methods
