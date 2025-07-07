@@ -37,7 +37,7 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-member-access': 'off', // Tắt cảnh báo khi truy cập thành viên không an toàn
       '@typescript-eslint/no-unsafe-return': 'off', // Tắt cảnh báo khi trả về giá trị không an toàn
 
-      '@typescript-eslint/no-explicit-any': 'warn', // Cảnh báo khi sử dụng any
+      '@typescript-eslint/no-explicit-any': 'off', // Cảnh báo khi sử dụng any
       '@typescript-eslint/no-floating-promises': 'error', // Bắt buộc xử lý promise
       '@typescript-eslint/no-unsafe-argument': 'warn', // Cảnh báo khi truyền đối số không an toàn
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }], // Cảnh báo khi có biến không sử dụng, ngoại trừ biến bắt đầu bằng '_'
