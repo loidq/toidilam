@@ -16,6 +16,8 @@ import {
 } from '../../application/commands'
 import { CreateOrgDto } from '../../application/dtos/create-org.dto'
 import { GetAllOrgsQueryDto } from '../../application/dtos/get-all-orgs-query.dto'
+import { GetOrgMembersQueryDto } from '../../application/dtos/get-org-members-query.dto'
+import { GetOrgQueryDto } from '../../application/dtos/get-org-query.dto'
 import { GetUserInvitationsQueryDto } from '../../application/dtos/get-user-invitations-query.dto'
 import { InviteMemberByEmailDto } from '../../application/dtos/invite-member-by-email.dto'
 import { InviteMemberDto } from '../../application/dtos/invite-member.dto'
@@ -27,7 +29,12 @@ import {
 } from '../../application/dtos/org-response.dto'
 import { RespondInvitationDto } from '../../application/dtos/respond-invitation.dto'
 import { UpdateOrgDto } from '../../application/dtos/update-org.dto'
-import { GetAllOrgsQuery, GetOrgQuery, GetUserInvitationsQuery } from '../../application/queries'
+import {
+  GetAllOrgsQuery,
+  GetOrgMembersQuery,
+  GetOrgQuery,
+  GetUserInvitationsQuery,
+} from '../../application/queries'
 import { OrgMember, OrgRoles } from '../../domain/decorators'
 import { OrgRole } from '../../domain/entities/org.entity'
 import { OrgMemberEntity } from '../../domain/entities/orgMember.entity'
@@ -91,8 +98,8 @@ export class OrgController {
     description: 'Organization retrieved successfully',
     type: OrgResponseDto,
   })
-  async getOrg(@Param('orgId') orgId: string): Promise<any> {
-    const getOrgQuery = new GetOrgQuery(orgId)
+  async getOrg(@Param() params: GetOrgQueryDto): Promise<any> {
+    const getOrgQuery = new GetOrgQuery(params.orgId)
     const org = await this.queryBus.execute(getOrgQuery)
     return this.responseBuilder.success(org, 'Organization retrieved successfully')
   }
@@ -108,14 +115,14 @@ export class OrgController {
     type: OrgResponseDto,
   })
   async updateOrg(
-    @Param('orgId') orgId: string,
+    @Param() params: GetOrgQueryDto,
     @OrgMember() orgMember: OrgMemberEntity,
     @Body() updateOrgDto: UpdateOrgDto,
   ): Promise<any> {
     const { name, slug, desc, cover, avatar, maxStorageSize } = updateOrgDto
     const updateOrgCommand = new UpdateOrgCommand(
-      orgId, // Use param instead of body
-      orgMember.userId, // Use orgMember.userId from authorization guard
+      params.orgId,
+      orgMember.userId,
       name,
       slug,
       desc,
@@ -139,7 +146,7 @@ export class OrgController {
     type: InvitationResponseDto,
   })
   async inviteMember(
-    @Param('orgId') orgId: string,
+    @Param() params: GetOrgQueryDto,
     @OrgMember() orgMember: OrgMemberEntity,
     @Body() inviteMemberDto: InviteMemberDto,
   ): Promise<any> {
@@ -153,7 +160,13 @@ export class OrgController {
       )
     }
 
-    const inviteMemberCommand = new InviteMemberCommand(orgId, userId, orgMember.userId, role)
+    const inviteMemberCommand = new InviteMemberCommand(
+      params.orgId,
+      userId,
+      orgMember.userId,
+      role,
+    )
+
     const invitation = await this.commandBus.execute(inviteMemberCommand)
 
     return this.responseBuilder.success(invitation, 'Member invited successfully')
@@ -170,7 +183,7 @@ export class OrgController {
     type: InvitationResponseDto,
   })
   async inviteMemberByEmail(
-    @Param('orgId') orgId: string,
+    @Param() params: GetOrgQueryDto,
     @OrgMember() orgMember: OrgMemberEntity,
     @Body() inviteMemberByEmailDto: InviteMemberByEmailDto,
   ): Promise<any> {
@@ -185,7 +198,7 @@ export class OrgController {
     }
 
     const inviteMemberByEmailCommand = new InviteMemberByEmailCommand(
-      orgId,
+      params.orgId,
       email,
       orgMember.userId,
       role,
@@ -238,5 +251,29 @@ export class OrgController {
     const invitations = await this.queryBus.execute(getUserInvitationsQuery)
 
     return this.responseBuilder.success(invitations, 'User invitations retrieved successfully')
+  }
+
+  // GET /orgs/:orgId/members - Get all members of an organization
+  @Get(':orgId/members')
+  @UseGuards(OrganizationRoleGuard)
+  @OrgRoles(OrgRole.ADMIN, OrgRole.MANAGER, OrgRole.MEMBER) // All members can view members list
+  @ApiOperation({ summary: 'Get all members of organization' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization members retrieved successfully',
+    type: [OrgMemberEntity],
+  })
+  async getOrgMembers(
+    @Param() params: GetOrgQueryDto,
+    @Query() query: GetOrgMembersQueryDto,
+  ): Promise<any> {
+    const getOrgMembersQuery = new GetOrgMembersQuery(
+      params.orgId,
+      query.page,
+      query.limit,
+      query.search,
+    )
+    const orgMembers = await this.queryBus.execute(getOrgMembersQuery)
+    return this.responseBuilder.success(orgMembers, 'Organization members retrieved successfully')
   }
 }

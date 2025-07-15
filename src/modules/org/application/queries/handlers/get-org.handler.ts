@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common'
+import { Inject, NotFoundException } from '@nestjs/common'
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs'
 
 import { OrgEntity } from '@/modules/org/domain/entities/org.entity'
@@ -13,6 +13,9 @@ export class GetOrgQueryHandler implements IQueryHandler<GetOrgQuery> {
   async execute(command: GetOrgQuery): Promise<OrgEntity | null> {
     const { id } = command
     const org = await this.orgRepository.findById(id)
+    if (!org) {
+      throw new NotFoundException('Organization not found')
+    }
     return org
   }
 }

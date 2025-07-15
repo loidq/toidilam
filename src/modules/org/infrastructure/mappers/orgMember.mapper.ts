@@ -20,7 +20,6 @@ export class OrgMemberMapper {
 
   static toPrismaCreate(orgMember: OrgMemberEntity): Prisma.OrganizationMemberCreateInput {
     return {
-      id: orgMember.id,
       user: {
         connect: { id: orgMember.userId },
       },
