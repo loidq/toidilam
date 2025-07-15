@@ -1,10 +1,6 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl, Min } from 'class-validator'
 
 export class UpdateOrgDto {
-  @IsString()
-  @IsNotEmpty()
-  id: string
-
   @IsOptional()
   @IsString()
   @IsNotEmpty()

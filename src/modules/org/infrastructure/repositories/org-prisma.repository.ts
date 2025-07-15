@@ -76,7 +76,6 @@ export class OrgPrismaRepository
 
   async updateOrg(org: OrgEntity): Promise<OrgEntity> {
     const prismaData = this.toPrismaUpdate(org)
-    console.log('Updating organization with data:', prismaData)
     return this.update({ id: org.id }, prismaData)
   }
 

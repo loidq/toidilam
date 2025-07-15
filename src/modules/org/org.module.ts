@@ -11,6 +11,7 @@ import {
 } from './application/commands/handlers'
 import {
   GetAllOrgsQueryHandler,
+  GetOrgMembersQueryHandler,
   GetOrgQueryHandler,
   GetUserInvitationsQueryHandler,
 } from './application/queries/handlers/'
@@ -25,7 +26,12 @@ const COMMAND_HANDLERS = [
   InviteMemberByEmailHandler,
   RespondInvitationHandler,
 ]
-const QUERY_HANDLERS = [GetOrgQueryHandler, GetAllOrgsQueryHandler, GetUserInvitationsQueryHandler]
+const QUERY_HANDLERS = [
+  GetOrgQueryHandler,
+  GetAllOrgsQueryHandler,
+  GetOrgMembersQueryHandler,
+  GetUserInvitationsQueryHandler,
+]
 @Module({
   imports: [],
   controllers: [OrgController],
@@ -46,6 +52,6 @@ const QUERY_HANDLERS = [GetOrgQueryHandler, GetAllOrgsQueryHandler, GetUserInvit
       useClass: UserPrismaRepository,
     },
   ],
-  exports: [OrganizationRoleGuard],
+  exports: [OrganizationRoleGuard, 'ORG_REPOSITORY'],
 })
 export class OrgModule {}
