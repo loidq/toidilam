@@ -16,7 +16,7 @@ export class ProjectMapper {
       countProjectTask: prismaProject.countProjectTask,
       createdAt: prismaProject.createdAt,
       updatedAt: prismaProject.updatedAt,
-      createdBy: prismaProject.createdBy || undefined,
+      createdBy: prismaProject.createdBy,
       updatedBy: prismaProject.updatedBy || undefined,
     })
   }

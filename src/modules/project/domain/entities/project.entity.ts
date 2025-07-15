@@ -10,7 +10,7 @@ export class ProjectEntity {
   public countProjectTask: boolean
   public createdAt?: Date
   public updatedAt?: Date
-  public createdBy?: string
+  public createdBy: string
   public updatedBy?: string
   constructor(props: {
     id: string
@@ -24,7 +24,7 @@ export class ProjectEntity {
     countProjectTask?: boolean
     createdAt?: Date
     updatedAt?: Date
-    createdBy?: string
+    createdBy: string
     updatedBy?: string
   }) {
     this.id = props.id
@@ -72,6 +72,5 @@ export class ProjectEntity {
     if (countMemberTask !== undefined) this.countMemberTask = countMemberTask
     if (countProjectTask !== undefined) this.countProjectTask = countProjectTask
     if (updatedBy !== undefined) this.updatedBy = updatedBy
-    this.updatedAt = new Date()
   }
 }
