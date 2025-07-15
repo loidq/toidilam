@@ -49,24 +49,31 @@ export class ProjectPrismaRepository
       isArchived: project.isArchived,
       countMemberTask: project.countMemberTask,
       countProjectTask: project.countProjectTask,
-      createdBy: project.createdBy || '',
+      createdBy: project.createdBy,
       organization: {
         connect: { id: project.organizationId },
       },
     }
   }
 
-  protected toPrismaUpdate(project: ProjectEntity): ProjectUpdateInput {
-    return {
-      name: project.name,
-      desc: project.desc || null,
-      cover: project.cover || null,
-      icon: project.icon || null,
-      isArchived: project.isArchived,
-      countMemberTask: project.countMemberTask,
-      countProjectTask: project.countProjectTask,
-      updatedBy: project.updatedBy || null,
+  protected toPrismaUpdate(projectEntity: ProjectEntity): ProjectUpdateInput {
+    const updateData: ProjectUpdateInput = {
+      name: projectEntity.name,
+      desc: projectEntity.desc,
+      cover: projectEntity.cover,
+      icon: projectEntity.icon,
+      isArchived: projectEntity.isArchived,
+      countMemberTask: projectEntity.countMemberTask,
+      countProjectTask: projectEntity.countProjectTask,
+      updatedBy: projectEntity.updatedBy,
     }
+
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key as keyof ProjectUpdateInput] === undefined) {
+        delete updateData[key as keyof ProjectUpdateInput]
+      }
+    })
+    return updateData
   }
 
   // Custom methods specific to project
