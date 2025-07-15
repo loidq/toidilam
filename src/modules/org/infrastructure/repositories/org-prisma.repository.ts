@@ -18,6 +18,10 @@ import { OrgEntity } from '@/modules/org/domain/entities/org.entity'
 import { IOrgRepository } from '@/modules/org/domain/repositories/org.repository'
 
 import { OrgMapper } from '../mappers/org.mapper'
+
+type PrismaOrgWithMembers = PrismaOrg & {
+  organizationMembers: PrismaOrgMember[]
+}
 @Injectable()
 export class OrgPrismaRepository
   extends BasePrismaRepository<
@@ -39,11 +43,7 @@ export class OrgPrismaRepository
   }
 
   // Implement abstract mapper methods
-  protected toDomain(
-    prismaOrg: PrismaOrg & {
-      organizationMembers: PrismaOrgMember[]
-    },
-  ): OrgEntity {
+  protected toDomain(prismaOrg: PrismaOrgWithMembers): OrgEntity {
     return OrgMapper.toDomain(prismaOrg)
   }
 

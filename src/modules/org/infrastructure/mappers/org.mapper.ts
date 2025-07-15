@@ -8,12 +8,12 @@ import { OrgEntity, OrgRole } from '@/modules/org/domain/entities/org.entity'
 
 import { InvitationStatus, OrgMemberEntity } from '../../domain/entities/orgMember.entity'
 
+type PrismaOrgWithMembers = PrismaOrg & {
+  organizationMembers: PrismaOrgMember[]
+}
+
 export class OrgMapper {
-  static toDomain(
-    prismaOrg: PrismaOrg & {
-      organizationMembers: PrismaOrgMember[]
-    },
-  ): OrgEntity {
+  static toDomain(prismaOrg: PrismaOrgWithMembers): OrgEntity {
     return new OrgEntity({
       id: prismaOrg.id,
       name: prismaOrg.name,
