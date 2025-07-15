@@ -35,8 +35,8 @@ export interface IUserRepository {
   ): Promise<{ users: UserEntity[]; total: number }>
 
   // Aggregate operations
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   aggregate(options?: UserAggregateQueryOptions): Promise<any>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   groupBy(options: UserGroupByQueryOptions): Promise<any>
 }

@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common'
 
-import { OrgPrismaRepository } from '../org/infrastructure/repositories/org-prisma.repository'
 import {
   ArchiveProjectHandler,
   CreateProjectHandler,
@@ -16,6 +15,7 @@ import {
 } from './application/queries/handlers'
 import { ProjectPrismaRepository } from './infrastructure/repositories/project-prisma.repository'
 import { ProjectController } from './presentation/controllers/project.controller'
+import { OrgPrismaRepository } from '../org/infrastructure/repositories/org-prisma.repository'
 
 const COMMAND_HANDLERS = [
   CreateProjectHandler,

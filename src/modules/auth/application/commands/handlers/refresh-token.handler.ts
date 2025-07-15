@@ -13,7 +13,7 @@ export interface IRefreshTokenResult {
 export class RefreshTokenHandler implements ICommandHandler<RefreshTokenCommand> {
   constructor(private readonly jwtService: JwtService) {}
 
-  // eslint-disable-next-line @typescript-eslint/require-await
+   
   async execute(command: RefreshTokenCommand): Promise<IRefreshTokenResult> {
     const { refreshToken } = command
 
