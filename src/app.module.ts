@@ -7,6 +7,7 @@ import { AppService } from './app.service'
 import { PrismaModule } from './infrastructure/prisma/prisma.module'
 import { AuthModule } from './modules/auth/auth.module'
 import { OrgModule } from './modules/org/org.module'
+import { ProjectModule } from './modules/project/project.module'
 import { UserModule } from './modules/user/user.module'
 import { CommonModule } from './shared/common/common.module'
 @Module({
@@ -20,6 +21,7 @@ import { CommonModule } from './shared/common/common.module'
     UserModule,
     AuthModule,
     OrgModule,
+    ProjectModule,
   ],
   controllers: [AppController],
   providers: [AppService],
