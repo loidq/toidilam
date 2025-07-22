@@ -14,10 +14,9 @@ import {
   OrgUpdateInput,
   OrgWhereUniqueInput,
 } from '@/infrastructure/prisma/types/org-query-options.types'
+import { OrgMemberEntity } from '@/modules/org/domain/entities/org-member.entity'
 import { OrgEntity } from '@/modules/org/domain/entities/org.entity'
 import { IOrgRepository } from '@/modules/org/domain/repositories/org.repository'
-
-import { OrgMapper } from '../mappers/org.mapper'
 
 type PrismaOrgWithMembers = PrismaOrg & {
   organizationMembers: PrismaOrgMember[]
@@ -44,15 +43,59 @@ export class OrgPrismaRepository
 
   // Implement abstract mapper methods
   protected toDomain(prismaOrg: PrismaOrgWithMembers): OrgEntity {
-    return OrgMapper.toDomain(prismaOrg)
+    return new OrgEntity({
+      id: prismaOrg.id,
+      name: prismaOrg.name,
+      slug: prismaOrg.slug,
+      desc: prismaOrg.desc ?? undefined,
+      cover: prismaOrg.cover ?? undefined,
+      avatar: prismaOrg.avatar ?? undefined,
+      maxStorageSize: prismaOrg.maxStorageSize ?? undefined,
+      createdBy: prismaOrg.createdBy,
+      updatedBy: prismaOrg.updatedBy ?? undefined,
+      createdAt: prismaOrg.createdAt,
+      updatedAt: prismaOrg.updatedAt ?? undefined,
+      organizationMembers:
+        prismaOrg.organizationMembers?.map(
+          member =>
+            new OrgMemberEntity({
+              id: member.id,
+              organizationId: member.organizationId,
+              userId: member.userId,
+              status: member.status as OrgMemberEntity['status'],
+              role: member.role as OrgMemberEntity['role'],
+              createdBy: member.createdBy,
+              updatedBy: member.updatedBy ?? undefined,
+              createdAt: member.createdAt,
+              updatedAt: member.updatedAt ?? undefined,
+            }),
+        ) ?? [],
+    })
   }
 
-  protected toPrismaCreate(org: OrgEntity): OrgCreateInput {
-    return OrgMapper.toPrismaCreate(org)
-  }
-
-  protected toPrismaUpdate(org: OrgEntity): OrgUpdateInput {
-    return OrgMapper.toPrismaUpdate(org)
+  protected toPrismaCreate(data: OrgEntity): OrgCreateInput {
+    return {
+      name: data.name,
+      slug: data.slug,
+      desc: data.desc,
+      cover: data.cover,
+      avatar: data.avatar,
+      maxStorageSize: data.maxStorageSize,
+      createdBy: data.createdBy,
+      organizationMembers:
+        data.organizationMembers.length > 0
+          ? {
+              create: data.organizationMembers.map(member => ({
+                user: {
+                  connect: { id: member.userId },
+                },
+                status: member.status,
+                role: member.role,
+                createdBy: member.createdBy,
+              })),
+            }
+          : undefined,
+    }
   }
 
   // Domain specific methods
@@ -68,29 +111,29 @@ export class OrgPrismaRepository
     return this.findFirst(options)
   }
 
-  async createOrg(org: OrgEntity): Promise<OrgEntity> {
-    // Convert the OrgEntity to Prisma input format
-    const prismaData = this.toPrismaCreate(org)
-    return this.create(prismaData)
+  async findMany(options: OrgFindQueryOptions): Promise<OrgEntity[]> {
+    return super.findMany(options)
   }
 
-  async updateOrg(org: OrgEntity): Promise<OrgEntity> {
-    const prismaData = this.toPrismaUpdate(org)
-    return this.update({ id: org.id }, prismaData)
+  async create(org: OrgEntity): Promise<OrgEntity> {
+    return super.create(org)
   }
 
+  async update(where: OrgWhereUniqueInput, data: OrgEntity): Promise<OrgEntity> {
+    return super.update(where, data)
+  }
   async softDeleteOrg(id: string): Promise<boolean> {
     return this.softDelete({ id })
   }
-  async deleteOrg(id: string): Promise<boolean> {
-    return this.delete({ id })
+  async delete(where: OrgWhereUniqueInput): Promise<boolean> {
+    return super.delete(where)
   }
 
   async existsById(id: string): Promise<boolean> {
-    return this.exists({ id })
+    return super.exists({ id })
   }
 
   async existsBySlug(slug: string): Promise<boolean> {
-    return this.exists({ slug })
+    return super.exists({ slug })
   }
 }

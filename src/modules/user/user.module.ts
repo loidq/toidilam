@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common'
 
-import { GetCurrentUserHandler } from './application/queries/handlers'
+import { GetUserByIdQueryHandler } from './application/queries/handlers'
 import { UserPrismaRepository } from './infrastructure/repositories/user-prisma.repository'
 import { UserController } from './presentation/controllers/user.controller'
 
 const COMMAND_HANDLERS = []
-const QUERY_HANDLERS = [GetCurrentUserHandler]
+const QUERY_HANDLERS = [GetUserByIdQueryHandler]
 @Module({
   controllers: [UserController],
   providers: [

@@ -7,7 +7,7 @@ import { IJwtPayload } from '@/modules/auth/application/services/jwt.service'
 import { JwtAuthGuard } from '@/modules/auth/domain/guards/jwt-auth.guard'
 import { ResponseBuilderService } from '@/shared/common/services/response-builder.service'
 
-import { GetCurrentUserQuery } from '../../application/queries'
+import { GetUserByIdQuery } from '../../application/queries'
 
 @Controller('user')
 @ApiBearerAuth()
@@ -19,11 +19,11 @@ export class UserController {
     private readonly responseBuilder: ResponseBuilderService,
   ) {}
 
-  @Get('me')
+  @Get('')
   async getCurrentUser(@Req() req: Request): Promise<any> {
-    const { id } = req.user as IJwtPayload
-    const getCurrentUserQuery = new GetCurrentUserQuery(id)
-    const user = await this.queryBus.execute(getCurrentUserQuery)
+    const { userId } = req.user as IJwtPayload
+    const getUserByIdQuery = new GetUserByIdQuery(userId)
+    const user = await this.queryBus.execute(getUserByIdQuery)
     return this.responseBuilder.success(user, 'User retrieved successfully')
   }
 }

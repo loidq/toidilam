@@ -1,4 +1,4 @@
-import { OrgMemberEntity } from './orgMember.entity'
+import { OrgMemberEntity } from './org-member.entity'
 
 export enum OrgRole {
   ADMIN = 'ADMIN',
@@ -8,19 +8,19 @@ export enum OrgRole {
 
 export class OrgEntity {
   public readonly id: string
-  public readonly createdBy: string
-  public readonly createdAt?: Date
-  public readonly updatedAt?: Date
+  public createdBy: string
+  public createdAt?: Date
+  public updatedAt?: Date
 
-  public readonly name: string
-  public readonly slug: string
-  public readonly desc?: string
-  public readonly cover?: string
-  public readonly avatar?: string
-  public readonly maxStorageSize?: number
-  public readonly updatedBy?: string
+  public name: string
+  public slug: string
+  public desc?: string
+  public cover?: string
+  public avatar?: string
+  public maxStorageSize?: number
+  public updatedBy?: string
 
-  public readonly organizationMembers: OrgMemberEntity[]
+  public organizationMembers: OrgMemberEntity[]
 
   public constructor(props: {
     id: string
@@ -68,7 +68,6 @@ export class OrgEntity {
     return new OrgEntity(data)
   }
 
-  // Phương thức cập nhật trả về bản sao mới (immutable)
   update(data: {
     name?: string
     slug?: string
@@ -80,19 +79,27 @@ export class OrgEntity {
     updatedAt?: Date
     organizationMembers?: OrgMemberEntity[]
   }): OrgEntity {
-    return new OrgEntity({
-      id: this.id,
-      createdBy: this.createdBy,
-      createdAt: this.createdAt,
-      name: data.name ?? this.name,
-      slug: data.slug ?? this.slug,
-      desc: data.desc ?? this.desc,
-      cover: data.cover ?? this.cover,
-      avatar: data.avatar ?? this.avatar,
-      maxStorageSize: data.maxStorageSize ?? this.maxStorageSize,
-      updatedBy: data.updatedBy ?? this.updatedBy,
-      updatedAt: data.updatedAt ?? this.updatedAt,
-      organizationMembers: data.organizationMembers ?? this.organizationMembers,
-    })
+    if (data.name !== undefined) this.name = data.name
+    if (data.slug !== undefined) this.slug = data.slug
+    if (data.desc !== undefined) this.desc = data.desc
+    if (data.cover !== undefined) this.cover = data.cover
+    if (data.avatar !== undefined) this.avatar = data.avatar
+    if (data.maxStorageSize !== undefined) this.maxStorageSize = data.maxStorageSize
+    if (data.updatedBy !== undefined) this.updatedBy = data.updatedBy
+    return this
+    // return new OrgEntity({
+    //   id: this.id,
+    //   createdBy: this.createdBy,
+    //   createdAt: this.createdAt,
+    //   name: data.name ?? this.name,
+    //   slug: data.slug ?? this.slug,
+    //   desc: data.desc ?? this.desc,
+    //   cover: data.cover ?? this.cover,
+    //   avatar: data.avatar ?? this.avatar,
+    //   maxStorageSize: data.maxStorageSize ?? this.maxStorageSize,
+    //   updatedBy: data.updatedBy ?? this.updatedBy,
+    //   updatedAt: data.updatedAt ?? this.updatedAt,
+    //   organizationMembers: data.organizationMembers ?? this.organizationMembers,
+    // })
   }
 }

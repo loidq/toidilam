@@ -1,6 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common'
 
-import { OrgMemberEntity } from '@/modules/org/domain/entities/orgMember.entity'
+import { OrgMemberEntity } from '@/modules/org/domain/entities/org-member.entity'
 
 import { IRequestWithOrgMember } from '../types/request-with-org-member.type'
 

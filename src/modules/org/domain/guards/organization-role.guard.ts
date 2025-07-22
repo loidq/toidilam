@@ -8,9 +8,9 @@ import {
 import { Reflector } from '@nestjs/core'
 import { isUUID } from 'class-validator'
 
+import { InvitationStatus } from '@/modules/org/domain/entities/org-member.entity'
 import { OrgRole } from '@/modules/org/domain/entities/org.entity'
-import { InvitationStatus } from '@/modules/org/domain/entities/orgMember.entity'
-import { IOrgMemberRepository } from '@/modules/org/domain/repositories/orgMember.repository'
+import { IOrgMemberRepository } from '@/modules/org/domain/repositories/org-member.repository'
 
 import { ORG_ROLES_KEY } from '../decorators/org-roles.decorator'
 import { IRequestWithOrgMember } from '../types/request-with-org-member.type'
@@ -58,7 +58,7 @@ export class OrganizationRoleGuard implements CanActivate {
     const orgMember = await this.orgMemberRepository.findOne({
       where: {
         organizationId: orgId,
-        userId: user.id,
+        userId: user.userId,
         status: InvitationStatus.ACCEPTED, // Only accepted members
       },
     })

@@ -9,41 +9,39 @@ import { ResponseBuilderService } from '@/shared/common/services/response-builde
 
 import {
   CreateOrgCommand,
-  InviteMemberByEmailCommand,
-  InviteMemberCommand,
-  RespondInvitationCommand,
+  RespondOrgInvitationCommand,
   UpdateOrgCommand,
 } from '../../application/commands'
-import { CreateOrgDto } from '../../application/dtos/create-org.dto'
-import { GetAllOrgsQueryDto } from '../../application/dtos/get-all-orgs-query.dto'
-import { GetOrgMembersQueryDto } from '../../application/dtos/get-org-members-query.dto'
-import { GetOrgQueryDto } from '../../application/dtos/get-org-query.dto'
-import { GetUserInvitationsQueryDto } from '../../application/dtos/get-user-invitations-query.dto'
-import { InviteMemberByEmailDto } from '../../application/dtos/invite-member-by-email.dto'
-import { InviteMemberDto } from '../../application/dtos/invite-member.dto'
+import {
+  CreateOrgDto,
+  GetOrgBySlugDto,
+  GetOrgInvitationsQueryDto,
+  OrgListQueryDto,
+  OrganizationIdDto,
+  RespondOrgInvitationDto,
+  UpdateOrgDto,
+} from '../../application/dtos'
 import {
   InvitationResponseDto,
   OrgResponseDto,
   OrgsListResponseDto,
   UserInvitationsResponseDto,
 } from '../../application/dtos/org-response.dto'
-import { RespondInvitationDto } from '../../application/dtos/respond-invitation.dto'
-import { UpdateOrgDto } from '../../application/dtos/update-org.dto'
 import {
-  GetAllOrgsQuery,
-  GetOrgMembersQuery,
-  GetOrgQuery,
-  GetUserInvitationsQuery,
+  GetOrgByIdQuery,
+  GetOrgBySlugQuery,
+  GetOrgInvitationsQuery,
+  GetOrgsQuery,
 } from '../../application/queries'
 import { OrgMember, OrgRoles } from '../../domain/decorators'
+import { OrgMemberEntity } from '../../domain/entities/org-member.entity'
 import { OrgRole } from '../../domain/entities/org.entity'
-import { OrgMemberEntity } from '../../domain/entities/orgMember.entity'
 import { OrganizationRoleGuard } from '../../domain/guards'
 
-@ApiTags('Organizations')
+@ApiTags('Organization')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@Controller('orgs') // Changed from 'org' to 'orgs' for plural resource naming
+@Controller('org') // Changed from 'org' to 'orgs' for plural resource naming
 export class OrgController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -51,7 +49,6 @@ export class OrgController {
     private readonly responseBuilder: ResponseBuilderService,
   ) {}
 
-  // GET /orgs - List all organizations with pagination and search
   @Get()
   @ApiOperation({ summary: 'Get all organizations' })
   @ApiResponse({
@@ -59,13 +56,42 @@ export class OrgController {
     description: 'Organizations retrieved successfully',
     type: OrgsListResponseDto,
   })
-  async getAllOrgs(@Query() query: GetAllOrgsQueryDto): Promise<any> {
-    const getAllOrgsQuery = new GetAllOrgsQuery(query.page, query.limit, query.search)
-    const orgs = await this.queryBus.execute(getAllOrgsQuery)
+  async getOrgList(@Query() { page, limit, search }: OrgListQueryDto): Promise<any> {
+    const getOrgsQuery = new GetOrgsQuery({
+      page,
+      limit,
+      search,
+    })
+    const orgs = await this.queryBus.execute(getOrgsQuery)
     return this.responseBuilder.success(orgs, 'Organizations retrieved successfully')
   }
 
-  // POST /orgs - Create new organization
+  @Get(':organizationId')
+  @ApiOperation({ summary: 'Get organization by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization retrieved successfully',
+    type: OrgResponseDto,
+  })
+  async getOrgById(@Param() { organizationId }: OrganizationIdDto): Promise<any> {
+    const getOrgQuery = new GetOrgByIdQuery(organizationId)
+    const org = await this.queryBus.execute(getOrgQuery)
+    return this.responseBuilder.success(org, 'Organization retrieved successfully')
+  }
+
+  @Get('slug/:slug')
+  @ApiOperation({ summary: 'Get organization by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization retrieved successfully',
+    type: OrgResponseDto,
+  })
+  async getOrgBySlug(@Param() { slug }: GetOrgBySlugDto): Promise<any> {
+    const getOrgQuery = new GetOrgBySlugQuery(slug)
+    const org = await this.queryBus.execute(getOrgQuery)
+    return this.responseBuilder.success(org, 'Organization retrieved successfully')
+  }
+
   @Post()
   @ApiOperation({ summary: 'Create new organization' })
   @ApiResponse({
@@ -74,38 +100,23 @@ export class OrgController {
     type: OrgResponseDto,
   })
   async createOrg(@Req() req: Request, @Body() createOrgDto: CreateOrgDto): Promise<any> {
-    const { id: createdBy } = req.user as IJwtPayload
+    const { userId } = req.user as IJwtPayload
     const { name, slug, desc, cover, avatar, maxStorageSize } = createOrgDto
-    const createOrgCommand = new CreateOrgCommand(
+    const createOrgCommand = new CreateOrgCommand({
       name,
       slug,
-      createdBy,
+      createdBy: userId,
       desc,
       cover,
       avatar,
       maxStorageSize,
-    )
+    })
 
     const org = await this.commandBus.execute(createOrgCommand)
-    return this.responseBuilder.success(org, 'Organization created successfully')
+    return this.responseBuilder.created(org, 'Organization created successfully')
   }
 
-  // GET /orgs/:orgId - Get specific organization by ID
-  @Get(':orgId')
-  @ApiOperation({ summary: 'Get organization by ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Organization retrieved successfully',
-    type: OrgResponseDto,
-  })
-  async getOrg(@Param() params: GetOrgQueryDto): Promise<any> {
-    const getOrgQuery = new GetOrgQuery(params.orgId)
-    const org = await this.queryBus.execute(getOrgQuery)
-    return this.responseBuilder.success(org, 'Organization retrieved successfully')
-  }
-
-  // PUT /orgs/:orgId - Update specific organization
-  @Put(':orgId')
+  @Put(':organizationId')
   @UseGuards(OrganizationRoleGuard)
   @OrgRoles(OrgRole.ADMIN) // Only organization admins can update organization settings
   @ApiOperation({ summary: 'Update organization' })
@@ -115,101 +126,50 @@ export class OrgController {
     type: OrgResponseDto,
   })
   async updateOrg(
-    @Param() params: GetOrgQueryDto,
+    @Param() { organizationId }: OrganizationIdDto,
     @OrgMember() orgMember: OrgMemberEntity,
     @Body() updateOrgDto: UpdateOrgDto,
   ): Promise<any> {
     const { name, slug, desc, cover, avatar, maxStorageSize } = updateOrgDto
-    const updateOrgCommand = new UpdateOrgCommand(
-      params.orgId,
-      orgMember.userId,
+    const updateOrgCommand = new UpdateOrgCommand({
+      organizationId,
+      updatedBy: orgMember.userId,
       name,
       slug,
       desc,
       cover,
       avatar,
       maxStorageSize,
-    )
+    })
 
     const org = await this.commandBus.execute(updateOrgCommand)
     return this.responseBuilder.success(org, 'Organization updated successfully')
   }
 
-  // POST /orgs/:orgId/members/invite - Invite member to specific organization
-  @Post(':orgId/members/invite')
-  @UseGuards(OrganizationRoleGuard)
-  @OrgRoles(OrgRole.ADMIN, OrgRole.MANAGER) // Admins and managers can invite members
-  @ApiOperation({ summary: 'Invite member to organization' })
+  @Get('invitation')
+  @ApiOperation({ summary: 'Get current user invitations' })
   @ApiResponse({
-    status: 201,
-    description: 'Member invited successfully',
-    type: InvitationResponseDto,
+    status: 200,
+    description: 'User invitations retrieved successfully',
+    type: UserInvitationsResponseDto,
   })
-  async inviteMember(
-    @Param() params: GetOrgQueryDto,
-    @OrgMember() orgMember: OrgMemberEntity,
-    @Body() inviteMemberDto: InviteMemberDto,
+  async getInvitations(
+    @Req() req: Request,
+    @Query() query: GetOrgInvitationsQueryDto,
   ): Promise<any> {
-    const { userId, role } = inviteMemberDto
-
-    // Additional business rule: only admins can invite other admins/managers
-    if ((role === OrgRole.ADMIN || role === OrgRole.MANAGER) && orgMember.role !== OrgRole.ADMIN) {
-      return this.responseBuilder.error(
-        'Only administrators can invite users with admin or manager roles',
-        '403',
-      )
-    }
-
-    const inviteMemberCommand = new InviteMemberCommand(
-      params.orgId,
+    const { userId } = req.user as IJwtPayload
+    const { page, limit } = query
+    const getUserInvitationsQuery = new GetOrgInvitationsQuery({
       userId,
-      orgMember.userId,
-      role,
-    )
+      page,
+      limit,
+    })
+    const invitations = await this.queryBus.execute(getUserInvitationsQuery)
 
-    const invitation = await this.commandBus.execute(inviteMemberCommand)
-
-    return this.responseBuilder.success(invitation, 'Member invited successfully')
+    return this.responseBuilder.success(invitations, 'User invitations retrieved successfully')
   }
 
-  // POST /orgs/:orgId/members/invite-by-email - Invite member by email to specific organization
-  @Post(':orgId/members/invite-by-email')
-  @UseGuards(OrganizationRoleGuard)
-  @OrgRoles(OrgRole.ADMIN, OrgRole.MANAGER) // Admins and managers can invite members
-  @ApiOperation({ summary: 'Invite member to organization by email' })
-  @ApiResponse({
-    status: 201,
-    description: 'Member invited by email successfully',
-    type: InvitationResponseDto,
-  })
-  async inviteMemberByEmail(
-    @Param() params: GetOrgQueryDto,
-    @OrgMember() orgMember: OrgMemberEntity,
-    @Body() inviteMemberByEmailDto: InviteMemberByEmailDto,
-  ): Promise<any> {
-    const { email, role } = inviteMemberByEmailDto
-
-    // Additional business rule: only admins can invite other admins/managers
-    if ((role === OrgRole.ADMIN || role === OrgRole.MANAGER) && orgMember.role !== OrgRole.ADMIN) {
-      return this.responseBuilder.error(
-        'Only administrators can invite users with admin or manager roles',
-        '403',
-      )
-    }
-
-    const inviteMemberByEmailCommand = new InviteMemberByEmailCommand(
-      params.orgId,
-      email,
-      orgMember.userId,
-      role,
-    )
-    const invitation = await this.commandBus.execute(inviteMemberByEmailCommand)
-
-    return this.responseBuilder.success(invitation, 'Member invited by email successfully')
-  }
-
-  // PUT /orgs/invitations/:invitationId/respond - Respond to invitation
-  @Put('invitations/:invitationId/respond')
+  @Put('invitation/respond')
   @ApiOperation({ summary: 'Respond to organization invitation' })
   @ApiResponse({
     status: 200,
@@ -217,63 +177,22 @@ export class OrgController {
     type: InvitationResponseDto,
   })
   async respondInvitation(
-    @Param('invitationId') invitationId: string,
     @Req() req: Request,
-    @Body() respondInvitationDto: RespondInvitationDto,
+    @Body() respondInvitationDto: RespondOrgInvitationDto,
   ): Promise<any> {
-    const { id: userId } = req.user as IJwtPayload
-    const { status } = respondInvitationDto
+    const { userId } = req.user as IJwtPayload
+    const { status, invitationId } = respondInvitationDto
 
-    const respondInvitationCommand = new RespondInvitationCommand(invitationId, userId, status)
+    const respondInvitationCommand = new RespondOrgInvitationCommand({
+      invitationId,
+      userId,
+      status,
+    })
     const invitation = await this.commandBus.execute(respondInvitationCommand)
 
     return this.responseBuilder.success(
       invitation,
       `Invitation ${status.toLowerCase()} successfully`,
     )
-  }
-
-  // GET /orgs/invitations/me - Get current user's invitations
-  @Get('invitations/me')
-  @ApiOperation({ summary: 'Get current user invitations' })
-  @ApiResponse({
-    status: 200,
-    description: 'User invitations retrieved successfully',
-    type: UserInvitationsResponseDto,
-  })
-  async getUserInvitations(
-    @Req() req: Request,
-    @Query() query: GetUserInvitationsQueryDto,
-  ): Promise<any> {
-    const { id: userId } = req.user as IJwtPayload
-
-    const getUserInvitationsQuery = new GetUserInvitationsQuery(userId, query.page, query.limit)
-    const invitations = await this.queryBus.execute(getUserInvitationsQuery)
-
-    return this.responseBuilder.success(invitations, 'User invitations retrieved successfully')
-  }
-
-  // GET /orgs/:orgId/members - Get all members of an organization
-  @Get(':orgId/members')
-  @UseGuards(OrganizationRoleGuard)
-  @OrgRoles(OrgRole.ADMIN, OrgRole.MANAGER, OrgRole.MEMBER) // All members can view members list
-  @ApiOperation({ summary: 'Get all members of organization' })
-  @ApiResponse({
-    status: 200,
-    description: 'Organization members retrieved successfully',
-    type: [OrgMemberEntity],
-  })
-  async getOrgMembers(
-    @Param() params: GetOrgQueryDto,
-    @Query() query: GetOrgMembersQueryDto,
-  ): Promise<any> {
-    const getOrgMembersQuery = new GetOrgMembersQuery(
-      params.orgId,
-      query.page,
-      query.limit,
-      query.search,
-    )
-    const orgMembers = await this.queryBus.execute(getOrgMembersQuery)
-    return this.responseBuilder.success(orgMembers, 'Organization members retrieved successfully')
   }
 }

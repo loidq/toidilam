@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { Prisma, User as PrismaUser } from '@prisma/client'
+import { Prisma, User as PrismaUser, UserStatus as PrismaUserStatus } from '@prisma/client'
 
 import { BasePrismaRepository } from '@/infrastructure/prisma/base/base-prisma.repository'
 import { PrismaService } from '@/infrastructure/prisma/prisma.service'
@@ -13,7 +13,6 @@ import {
 
 import { UserEntity } from '../../domain/entities/user.entity'
 import { IUserRepository } from '../../domain/repositories/user.repository'
-import { UserMapper } from '../mappers/user.mapper'
 
 @Injectable()
 export class UserPrismaRepository
@@ -36,16 +35,40 @@ export class UserPrismaRepository
   }
 
   // Implement abstract mapper methods
-  protected toDomain(prismaUser: PrismaUser): UserEntity {
-    return UserMapper.toDomain(prismaUser)
+  protected toDomain(data: PrismaUser): UserEntity {
+    return new UserEntity({
+      id: data.id,
+      email: data.email,
+      password: data.password,
+      name: data.name,
+      status: data.status as UserEntity['status'],
+      country: data.country ?? undefined,
+      bio: data.bio ?? undefined,
+      photo: data.photo ?? undefined,
+      dob: data.dob ?? undefined,
+      settings: data.settings as UserEntity['settings'],
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+      createdBy: data.createdBy ?? undefined,
+      updatedBy: data.updatedBy ?? undefined,
+      deletedAt: data.deletedAt ?? undefined,
+      isDeleted: data.isDeleted,
+    })
   }
 
-  protected toPrismaCreate(user: UserEntity): UserCreateInput {
-    return UserMapper.toPrismaCreate(user)
-  }
-
-  protected toPrismaUpdate(user: UserEntity): UserUpdateInput {
-    return UserMapper.toPrismaUpdate(user)
+  protected toPrismaCreate(data: UserEntity): UserCreateInput {
+    return {
+      email: data.email,
+      password: data.password,
+      name: data.name,
+      status: data.status as PrismaUserStatus,
+      country: data.country,
+      bio: data.bio,
+      photo: data.photo,
+      dob: data.dob,
+      settings: data.settings,
+      createdBy: data.createdBy,
+    }
   }
 
   // Domain specific methods
@@ -61,32 +84,29 @@ export class UserPrismaRepository
     return this.findFirst(options)
   }
 
-  async createUser(user: UserEntity): Promise<UserEntity> {
-    const prismaData = this.toPrismaCreate(user)
-    return this.create(prismaData)
+  async create(data: UserEntity): Promise<UserEntity> {
+    return super.create(data)
   }
 
-  async updateUser(user: UserEntity): Promise<UserEntity> {
-    const prismaData = this.toPrismaUpdate(user)
-    return this.update({ id: user.id }, prismaData)
+  async update(where: UserWhereUniqueInput, data: UserEntity): Promise<UserEntity> {
+    return super.update(where, data)
   }
 
-  async softDeleteUser(id: string): Promise<boolean> {
-    return this.softDelete({ id })
+  async softDelete(where: UserWhereUniqueInput): Promise<boolean> {
+    return super.softDelete(where)
   }
-  async deleteUser(id: string): Promise<boolean> {
-    return this.delete({ id })
+  async delete(where: UserWhereUniqueInput): Promise<boolean> {
+    return super.delete(where)
   }
 
   async existsById(id: string): Promise<boolean> {
-    return this.exists({ id })
+    return super.exists({ id })
   }
 
   async existsByEmail(email: string): Promise<boolean> {
-    return this.exists({ email })
+    return super.exists({ email })
   }
 
-  // Extended methods using query options
   async findUsersWithPagination(
     page: number = 1,
     limit: number = 10,

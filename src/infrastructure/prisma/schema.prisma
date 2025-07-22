@@ -209,6 +209,8 @@ model OrganizationMember {
   userId         String           @db.Uuid
   status         InvitationStatus
   role           OrganizationRole
+  isRemoved      Boolean          @default(false)
+  removedAt      DateTime?
   createdAt      DateTime         @default(now())
   createdBy      String           @db.Uuid
   updatedAt      DateTime         @updatedAt
@@ -235,6 +237,8 @@ model Member {
   role      MemberRole
   userId    String     @db.Uuid
   projectId String     @db.Uuid
+  isRemoved Boolean    @default(false)
+  removedAt DateTime?
   createdAt DateTime   @default(now())
   createdBy String     @db.Uuid
   updatedAt DateTime   @updatedAt
@@ -267,6 +271,8 @@ model Project {
   cover                       String?
   icon                        String?
   isArchived                  Boolean                      @default(false)
+  isDeleted                   Boolean                      @default(false)
+  deletedAt                   DateTime?
   // these count settings is used for counting the number of tasks by days
   countMemberTask             Boolean                      @default(false)
   countProjectTask            Boolean                      @default(true)
@@ -285,7 +291,7 @@ model ProjectView {
   icon      String?
   projectId String          @db.Uuid
   order     Int?
-  data      Json?           @default("{}")
+  data      Json            @default("{}")
   createdAt DateTime        @default(now())
   createdBy String          @db.Uuid
   updatedAt DateTime        @updatedAt
@@ -563,14 +569,14 @@ model Activity {
 model Comment {
   id        String   @id @default(uuid(7)) @db.Uuid
   taskId    String   @db.Uuid
-  projectId String   @db.Uuid
   content   String
+  projectId String?  @db.Uuid
   createdAt DateTime @default(now())
   createdBy String   @db.Uuid
   updatedAt DateTime @updatedAt
   updatedBy String?  @db.Uuid
   task      Task     @relation(fields: [taskId], references: [id])
-  project   Project  @relation(fields: [projectId], references: [id])
+  Project   Project? @relation(fields: [projectId], references: [id])
 }
 
 model Application {

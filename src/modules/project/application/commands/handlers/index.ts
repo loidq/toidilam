@@ -1,4 +1,5 @@
 export * from './archive-project.handler'
 export * from './create-project.handler'
 export * from './delete-project.handler'
+export * from './project-view.handlers'
 export * from './update-project.handler'

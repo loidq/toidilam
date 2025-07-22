@@ -4,13 +4,17 @@ import { JwtModule, JwtService as NestJwtService } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
 
 import { UserModule } from '../user/user.module'
-import { LoginHandler, RefreshTokenHandler, RegisterHandler } from './application/commands/handlers'
+import {
+  RefreshTokenCommandHandler,
+  SignInCommandHandler,
+  SignUpCommandHandler,
+} from './application/commands/handlers'
 import { JwtService } from './application/services/jwt.service'
 import { PasswordService } from './application/services/password.service'
 import { JwtStrategy } from './infrastructure/strategies/jwt.strategy'
 import { AuthController } from './presentation/controllers/auth.controller'
 
-const COMMAND_HANDLERS = [RegisterHandler, LoginHandler, RefreshTokenHandler]
+const COMMAND_HANDLERS = [SignInCommandHandler, SignUpCommandHandler, RefreshTokenCommandHandler]
 const JWT_PROVIDERS = [
   {
     provide: 'ACCESS_TOKEN_JWT',

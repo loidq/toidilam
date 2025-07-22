@@ -1,3 +1,4 @@
+import { deepCleanObject } from '@/shared/utils/deep-clean.util'
 import { PrismaService } from '../prisma.service'
 import {
   AggregateQueryOptions,
@@ -7,7 +8,6 @@ import {
   GroupByQueryOptions,
 } from '../types/query-options.types'
 import { IBaseRepository } from './base-repository.interface'
-
 /**
  * Abstract base repository implementation using Prisma
  */
@@ -50,7 +50,9 @@ export abstract class BasePrismaRepository<
   // Abstract mapper methods - phải implement ở child class
   protected abstract toDomain(prismaEntity: any): TEntity
   protected abstract toPrismaCreate(entity: TEntity): TCreateInput
-  protected abstract toPrismaUpdate(entity: TEntity): TUpdateInput
+  protected toPrismaUpdate(data: Partial<TEntity>): TUpdateInput {
+    return data as unknown as TUpdateInput
+  }
 
   async findUnique(
     where: TWhereUniqueInput,
@@ -82,17 +84,26 @@ export abstract class BasePrismaRepository<
       ...this.buildQueryOptions(options),
       where: options?.where,
     })
-
     return results.map((result: any) => this.toDomain(result))
   }
 
-  async create(data: TCreateInput): Promise<TEntity> {
-    const result = await this.model.create({ data })
+  async create(data: TEntity): Promise<TEntity> {
+    const prismaData = this.toPrismaCreate(data)
+    const result = await this.model.create({ data: deepCleanObject(prismaData) })
     return this.toDomain(result)
   }
 
-  async update(where: TWhereUniqueInput, data: TUpdateInput): Promise<TEntity> {
-    const result = await this.model.update({ where, data })
+  async createMany(data: TEntity[]): Promise<TEntity[]> {
+    return await this.model.createMany({
+      data: data.map(item => this.toPrismaCreate(item)),
+      skipDuplicates: true,
+    })
+  }
+
+  async update(where: TWhereUniqueInput, data: Partial<TEntity>): Promise<TEntity> {
+    const prismaData = this.toPrismaUpdate(data)
+    const result = await this.model.update({ where, data: deepCleanObject(prismaData) })
+
     return this.toDomain(result)
   }
 

@@ -1,0 +1,11 @@
+export enum ProjectViewType {
+  LIST = 'LIST',
+  BOARD = 'BOARD',
+  CALENDAR = 'CALENDAR',
+  TIMELINE = 'TIMELINE',
+  GOAL = 'GOAL',
+  TEAM = 'TEAM',
+  ACTIVITY = 'ACTIVITY',
+  DASHBOARD = 'DASHBOARD',
+  GRID = 'GRID',
+}

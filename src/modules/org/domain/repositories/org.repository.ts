@@ -2,6 +2,7 @@ import {
   OrgBaseQueryOptions,
   OrgCountQueryOptions,
   OrgFindQueryOptions,
+  OrgWhereUniqueInput,
 } from '@/infrastructure/prisma/types/org-query-options.types'
 
 import { OrgEntity } from '../entities/org.entity'
@@ -14,9 +15,9 @@ export interface IOrgRepository {
   findMany(options?: OrgFindQueryOptions): Promise<OrgEntity[]>
 
   // Create/Update/Delete
-  createOrg(org: OrgEntity): Promise<OrgEntity>
-  updateOrg(org: OrgEntity): Promise<OrgEntity>
-  deleteOrg(id: string): Promise<boolean>
+  create(data: OrgEntity): Promise<OrgEntity>
+  update(where: OrgWhereUniqueInput, data: Partial<OrgEntity>): Promise<OrgEntity>
+  delete(where: OrgWhereUniqueInput): Promise<boolean>
   // Existence checks
   existsById(id: string): Promise<boolean>
   existsBySlug(slug: string): Promise<boolean>

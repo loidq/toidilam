@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common'
 import { JwtService as NestJwtService } from '@nestjs/jwt'
 
 export interface IJwtPayload {
-  id: string
+  userId: string
   email: string
 }
 

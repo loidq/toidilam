@@ -7,7 +7,7 @@ import { UpdateProjectCommand } from '../project.commands'
 
 @Injectable()
 @CommandHandler(UpdateProjectCommand)
-export class UpdateProjectHandler implements ICommandHandler<UpdateProjectCommand> {
+export class UpdateProjectCommandHandler implements ICommandHandler<UpdateProjectCommand> {
   constructor(
     @Inject('PROJECT_REPOSITORY')
     private readonly projectRepository: IProjectRepository,
@@ -15,7 +15,7 @@ export class UpdateProjectHandler implements ICommandHandler<UpdateProjectComman
 
   async execute(command: UpdateProjectCommand): Promise<ProjectEntity> {
     const {
-      id,
+      projectId,
       updatedBy,
       name,
       desc,
@@ -26,12 +26,12 @@ export class UpdateProjectHandler implements ICommandHandler<UpdateProjectComman
       countProjectTask,
     } = command
 
-    const existingProject = await this.projectRepository.findById(id)
-    if (!existingProject) {
+    const existingProject = await this.projectRepository.findById(projectId)
+    if (!existingProject || existingProject.isDeleted) {
       throw new NotFoundException('Project not found')
     }
 
-    existingProject.updateProject(
+    existingProject.update(
       name,
       desc,
       cover,
@@ -42,6 +42,6 @@ export class UpdateProjectHandler implements ICommandHandler<UpdateProjectComman
       updatedBy,
     )
 
-    return await this.projectRepository.updateProject(existingProject)
+    return await this.projectRepository.update({ id: projectId }, existingProject)
   }
 }
