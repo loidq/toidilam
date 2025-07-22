@@ -1,40 +1,57 @@
 import { Module } from '@nestjs/common'
 
+import { OrgPrismaRepository } from '@/modules/org/infrastructure/repositories/org-prisma.repository'
+
 import {
-  ArchiveProjectHandler,
-  CreateProjectHandler,
-  DeleteProjectHandler,
-  UnarchiveProjectHandler,
-  UpdateProjectHandler,
+  ArchiveProjectCommandHandler,
+  CreateProjectCommandHandler,
+  CreateProjectViewCommandHandler,
+  DeleteProjectCommandHandler,
+  DeleteProjectViewCommandHandler,
+  UpdateProjectCommandHandler,
+  UpdateProjectViewCommandHandler,
 } from './application/commands/handlers'
 import {
-  GetProjectHandler,
-  GetProjectsByOrganizationHandler,
-  GetUserProjectsHandler,
-  SearchProjectsHandler,
+  GetMembersQueryHandler,
+  GetProjectByIdQueryHandler,
+  GetProjectsByUserQueryHandler,
+  GetProjectsQueryHandler,
+  GetProjectViewQueryHandler,
+  GetProjectViewsQueryHandler,
+  SearchProjectsQueryHandler,
 } from './application/queries/handlers'
 import { ProjectPrismaRepository } from './infrastructure/repositories/project-prisma.repository'
+import { ProjectViewPrismaRepository } from './infrastructure/repositories/project-view-prisma.repository'
+import { MemberController } from './presentation/controllers/member.controller'
 import { ProjectController } from './presentation/controllers/project.controller'
-import { OrgPrismaRepository } from '../org/infrastructure/repositories/org-prisma.repository'
 
 const COMMAND_HANDLERS = [
-  CreateProjectHandler,
-  UpdateProjectHandler,
-  DeleteProjectHandler,
-  ArchiveProjectHandler,
-  UnarchiveProjectHandler,
+  CreateProjectCommandHandler,
+  DeleteProjectCommandHandler,
+  UpdateProjectCommandHandler,
+  ArchiveProjectCommandHandler,
+  // ProjectView handlers
+  CreateProjectViewCommandHandler,
+  UpdateProjectViewCommandHandler,
+  DeleteProjectViewCommandHandler,
 ]
 
 const QUERY_HANDLERS = [
-  GetProjectHandler,
-  GetProjectsByOrganizationHandler,
-  SearchProjectsHandler,
-  GetUserProjectsHandler,
+  GetProjectByIdQueryHandler,
+  GetProjectsByUserQueryHandler,
+  GetProjectsQueryHandler,
+  GetProjectViewsQueryHandler,
+  GetProjectViewQueryHandler,
+  SearchProjectsQueryHandler,
+
+  //Member handlers
+  GetMembersQueryHandler,
+  // ProjectView handlers
 ]
 
 @Module({
   imports: [],
-  controllers: [ProjectController],
+  controllers: [ProjectController, MemberController],
   providers: [
     ...COMMAND_HANDLERS,
     ...QUERY_HANDLERS,
@@ -43,10 +60,14 @@ const QUERY_HANDLERS = [
       useClass: ProjectPrismaRepository,
     },
     {
+      provide: 'PROJECT_VIEW_REPOSITORY',
+      useClass: ProjectViewPrismaRepository,
+    },
+    {
       provide: 'ORG_REPOSITORY',
       useClass: OrgPrismaRepository,
     },
   ],
-  exports: ['PROJECT_REPOSITORY'],
+  exports: ['PROJECT_REPOSITORY', 'PROJECT_VIEW_REPOSITORY'],
 })
 export class ProjectModule {}

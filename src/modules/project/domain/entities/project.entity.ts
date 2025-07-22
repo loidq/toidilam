@@ -1,31 +1,39 @@
+import { ProjectViewEntity } from './project-view.entity'
+
 export class ProjectEntity {
-  public readonly id: string
+  public readonly id?: string
   public name: string
   public organizationId: string
   public desc?: string
   public cover?: string
   public icon?: string
   public isArchived: boolean
+  public isDeleted: boolean = false
   public countMemberTask: boolean
   public countProjectTask: boolean
   public createdAt?: Date
   public updatedAt?: Date
+  public deletedAt?: Date
   public createdBy: string
   public updatedBy?: string
+  public projectViews: ProjectViewEntity[]
   constructor(props: {
-    id: string
+    id?: string
     name: string
     organizationId: string
     desc?: string
     cover?: string
     icon?: string
     isArchived?: boolean
+    isDeleted?: boolean
     countMemberTask?: boolean
     countProjectTask?: boolean
     createdAt?: Date
     updatedAt?: Date
+    deletedAt?: Date
     createdBy: string
     updatedBy?: string
+    projectViews?: ProjectViewEntity[]
   }) {
     this.id = props.id
     this.name = props.name
@@ -34,16 +42,18 @@ export class ProjectEntity {
     this.cover = props.cover
     this.icon = props.icon
     this.isArchived = props.isArchived || false
+    this.isDeleted = props.isDeleted || false
     this.countMemberTask = props.countMemberTask || false
     this.countProjectTask = props.countProjectTask || true
     this.createdAt = props.createdAt
     this.updatedAt = props.updatedAt
+    this.deletedAt = props.deletedAt
     this.createdBy = props.createdBy
     this.updatedBy = props.updatedBy
+    this.projectViews = props.projectViews || []
   }
 
-  static createProject(data: {
-    id: string
+  static create(data: {
     name: string
     organizationId: string
     createdBy: string
@@ -54,7 +64,7 @@ export class ProjectEntity {
     return new ProjectEntity(data)
   }
 
-  updateProject(
+  update(
     name?: string,
     desc?: string,
     cover?: string,

@@ -1,54 +1,57 @@
-export enum UserStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  BANNED = 'BANNED',
-}
+import { UserStatus } from '../enums/user.enum'
 
 export class UserEntity {
-  constructor(
-    public readonly id: string,
-    public email: string,
-    public password: string,
-    public name: string,
-    public status: UserStatus,
-    public country?: string,
-    public bio?: string,
-    public photo?: string,
-    public dob?: Date,
-    public settings: Record<string, any> = {},
-    public createdAt?: Date,
-    public updatedAt?: Date,
-    public createdBy?: string,
-    public updatedBy?: string,
-    public deletedAt?: Date,
-    public isDeleted: boolean = false,
-  ) {}
-
-  static createUser(
-    id: string,
-    email: string,
-    password: string,
-    name: string,
-    status?: UserStatus,
-    country?: string,
-    bio?: string,
-    photo?: string,
-    dob?: Date,
-  ): UserEntity {
-    return new UserEntity(
-      id,
-      email,
-      password,
-      name,
-      status || UserStatus.ACTIVE,
-      country || 'VN',
-      bio,
-      photo,
-      dob,
-    )
+  public readonly id?: string
+  public email: string
+  public password: string
+  public name: string
+  public status: UserStatus
+  public country?: string
+  public bio?: string
+  public photo?: string
+  public dob?: Date
+  public settings: Record<string, any> = {}
+  public createdAt?: Date
+  public updatedAt?: Date
+  public createdBy?: string
+  public updatedBy?: string
+  public deletedAt?: Date
+  public isDeleted: boolean = false
+  constructor(props: {
+    id?: string
+    email: string
+    password: string
+    name: string
+    status?: UserStatus
+    country?: string
+    bio?: string
+    photo?: string
+    dob?: Date
+    settings?: Record<string, any>
+    createdAt?: Date
+    updatedAt?: Date
+    createdBy?: string
+    updatedBy?: string
+    deletedAt?: Date
+    isDeleted?: boolean
+  }) {
+    Object.assign(this, props)
   }
 
-  updateUser(data: {
+  static create(data: {
+    email: string
+    password: string
+    name: string
+    status?: UserStatus
+    country?: string
+    bio?: string
+    photo?: string
+    dob?: Date
+  }): UserEntity {
+    return new UserEntity(data)
+  }
+
+  update(data: {
     name?: string
     country?: string
     bio?: string
@@ -64,7 +67,6 @@ export class UserEntity {
     if (data.settings !== undefined) {
       this.settings = { ...this.settings, ...data.settings }
     }
-    this.updatedAt = new Date()
     return this
   }
 }

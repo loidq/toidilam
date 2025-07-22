@@ -1,10 +1,6 @@
 // Commands
-export * from './create-org.command'
-export * from './invite-member-by-email.command'
-export * from './invite-member.command'
-export * from './respond-invitation.command'
-export * from './update-org.command'
-
+export * from './org-member.commands'
+export * from './org.commands'
 // Handlers
 export * from './handlers/create-org.handler'
 export * from './handlers/invite-member-by-email.handler'

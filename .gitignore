@@ -64,3 +64,4 @@ scripts/
 src/infrastructure/prisma/migrations
 
 docs/Git-Convention.md
+/docs

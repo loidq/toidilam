@@ -1,22 +1,21 @@
 import { ConflictException, Inject } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 
+import { InvitationStatus, OrgMemberEntity } from '@/modules/org/domain/entities/org-member.entity'
 import { OrgEntity, OrgRole } from '@/modules/org/domain/entities/org.entity'
-import { InvitationStatus, OrgMemberEntity } from '@/modules/org/domain/entities/orgMember.entity'
 import { IOrgRepository } from '@/modules/org/domain/repositories/org.repository'
-import { IOrgMemberRepository } from '@/modules/org/domain/repositories/orgMember.repository'
 
-import { CreateOrgCommand } from '../create-org.command'
+import { CreateOrgCommand } from '../org.commands'
 @CommandHandler(CreateOrgCommand)
-export class CreateOrgHandler implements ICommandHandler<CreateOrgCommand> {
+export class CreateOrgCommandHandler implements ICommandHandler<CreateOrgCommand> {
   constructor(
-    @Inject('ORG_REPOSITORY') private readonly orgRepository: IOrgRepository,
-    @Inject('ORG_MEMBER_REPOSITORY') private readonly orgMemberRepository: IOrgMemberRepository,
+    @Inject('ORG_REPOSITORY')
+    private readonly orgRepository: IOrgRepository,
   ) {}
   async execute(command: CreateOrgCommand): Promise<OrgEntity> {
     const { name, slug, desc, cover, avatar, maxStorageSize, createdBy } = command
 
-    const orgMember = OrgMemberEntity.create({
+    const createOrgMember = OrgMemberEntity.create({
       id: '',
       organizationId: '',
       userId: createdBy,
@@ -34,14 +33,14 @@ export class CreateOrgHandler implements ICommandHandler<CreateOrgCommand> {
       avatar,
       maxStorageSize,
       createdBy,
-      organizationMembers: [orgMember],
+      organizationMembers: [createOrgMember],
     })
-    //check if slug already exists
+
     const existingSlug = await this.orgRepository.findBySlug(slug)
     if (existingSlug) {
-      throw new ConflictException(`Organization with slug "${slug}" already exists`)
+      throw new ConflictException(`Organization with slug already exists`)
     }
 
-    return await this.orgRepository.createOrg(createOrg)
+    return await this.orgRepository.create(createOrg)
   }
 }

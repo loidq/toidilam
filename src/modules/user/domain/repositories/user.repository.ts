@@ -4,6 +4,7 @@ import {
   UserCountQueryOptions,
   UserFindQueryOptions,
   UserGroupByQueryOptions,
+  UserWhereUniqueInput,
 } from '@/infrastructure/prisma/types/user-query-options.types'
 
 import { UserEntity } from '../entities/user.entity'
@@ -16,10 +17,10 @@ export interface IUserRepository {
   findMany(options?: UserFindQueryOptions): Promise<UserEntity[]>
 
   // Create/Update/Delete
-  createUser(user: UserEntity): Promise<UserEntity>
-  updateUser(user: UserEntity): Promise<UserEntity>
-  deleteUser(id: string): Promise<boolean>
-  softDeleteUser(id: string): Promise<boolean>
+  create(data: UserEntity): Promise<UserEntity>
+  update(where: UserWhereUniqueInput, data: Partial<UserEntity>): Promise<UserEntity>
+  delete(where: UserWhereUniqueInput): Promise<boolean>
+  softDelete(where: UserWhereUniqueInput): Promise<boolean>
   // Existence checks
   existsById(id: string): Promise<boolean>
   existsByEmail(email: string): Promise<boolean>
@@ -35,8 +36,6 @@ export interface IUserRepository {
   ): Promise<{ users: UserEntity[]; total: number }>
 
   // Aggregate operations
-   
   aggregate(options?: UserAggregateQueryOptions): Promise<any>
-   
   groupBy(options: UserGroupByQueryOptions): Promise<any>
 }

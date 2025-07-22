@@ -2,7 +2,7 @@ import { UnauthorizedException } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 
 import { JwtService } from '../../services/jwt.service'
-import { RefreshTokenCommand } from '../refresh-token.command'
+import { RefreshTokenCommand } from '../auth.commands'
 
 export interface IRefreshTokenResult {
   accessToken: string
@@ -10,26 +10,18 @@ export interface IRefreshTokenResult {
 }
 
 @CommandHandler(RefreshTokenCommand)
-export class RefreshTokenHandler implements ICommandHandler<RefreshTokenCommand> {
+export class RefreshTokenCommandHandler implements ICommandHandler<RefreshTokenCommand> {
   constructor(private readonly jwtService: JwtService) {}
 
-   
-  async execute(command: RefreshTokenCommand): Promise<IRefreshTokenResult> {
-    const { refreshToken } = command
-
+  async execute({ refreshToken }: RefreshTokenCommand): Promise<IRefreshTokenResult> {
     try {
       const payload = this.jwtService.verifyRefreshToken(refreshToken)
-
-      const newAccessToken = this.jwtService.generateAccessToken({
-        id: payload.id,
+      const newPayload = {
+        userId: payload.userId,
         email: payload.email,
-      })
-
-      const newRefreshToken = this.jwtService.generateRefreshToken({
-        id: payload.id,
-        email: payload.email,
-      })
-
+      }
+      const newAccessToken = this.jwtService.generateAccessToken(newPayload)
+      const newRefreshToken = this.jwtService.generateRefreshToken(newPayload)
       return {
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,

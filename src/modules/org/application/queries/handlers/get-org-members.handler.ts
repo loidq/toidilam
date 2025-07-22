@@ -1,11 +1,11 @@
 import { Inject } from '@nestjs/common'
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs'
 
-import { OrgMemberFindQueryOptions } from '@/infrastructure/prisma/types/orgMember-query-options.types'
-import { InvitationStatus, OrgMemberEntity } from '@/modules/org/domain/entities/orgMember.entity'
-import { IOrgMemberRepository } from '@/modules/org/domain/repositories/orgMember.repository'
+import { OrgMemberFindQueryOptions } from '@/infrastructure/prisma/types/org-member-query-options.types'
+import { InvitationStatus, OrgMemberEntity } from '@/modules/org/domain/entities/org-member.entity'
+import { IOrgMemberRepository } from '@/modules/org/domain/repositories/org-member.repository'
 
-import { GetOrgMembersQuery } from '../get-org-members.query'
+import { GetOrgMembersQuery } from '../org-member.queries'
 
 @QueryHandler(GetOrgMembersQuery)
 export class GetOrgMembersQueryHandler implements IQueryHandler<GetOrgMembersQuery> {

@@ -65,10 +65,17 @@ async function bootstrap(): Promise<void> {
       description: 'Enter JWT access token',
       in: 'header',
     })
+
     .build()
 
   const document = (): OpenAPIObject => SwaggerModule.createDocument(app, config)
-  SwaggerModule.setup('docs', app, document)
+  SwaggerModule.setup('docs', app, document, {
+    customSiteTitle: 'ToiDiLam API Documentation',
+    customfavIcon: 'https://example.com/favicon.ico',
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  })
 
   const PORT = process.env.PORT ?? 3000
   await app.listen(PORT)

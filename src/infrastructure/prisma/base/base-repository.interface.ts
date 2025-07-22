@@ -35,8 +35,8 @@ export interface IBaseRepository<
     options?: FindQueryOptions<TWhereInput, TSelect, TInclude, TOrderBy, TOmit>,
   ): Promise<TEntity[]>
 
-  create(data: TCreateInput): Promise<TEntity>
-  update(where: TWhereUniqueInput, data: TUpdateInput): Promise<TEntity>
+  create(data: TEntity): Promise<TEntity>
+  update(where: TWhereUniqueInput, data: Partial<TEntity>): Promise<TEntity>
   delete(where: TWhereUniqueInput): Promise<boolean>
   softDelete(where: TWhereUniqueInput): Promise<boolean>
 

@@ -7,7 +7,7 @@ import { SearchProjectsQuery } from '../project.queries'
 
 @Injectable()
 @QueryHandler(SearchProjectsQuery)
-export class SearchProjectsHandler implements IQueryHandler<SearchProjectsQuery> {
+export class SearchProjectsQueryHandler implements IQueryHandler<SearchProjectsQuery> {
   constructor(
     @Inject('PROJECT_REPOSITORY')
     private readonly projectRepository: IProjectRepository,
@@ -16,13 +16,13 @@ export class SearchProjectsHandler implements IQueryHandler<SearchProjectsQuery>
   async execute(query: SearchProjectsQuery): Promise<{ projects: ProjectEntity[]; total: number }> {
     const { searchTerm, organizationId, page, limit } = query
 
-    const projects = await this.projectRepository.searchProjects(searchTerm, organizationId, {
+    const projects = await this.projectRepository.search(searchTerm, organizationId, {
       skip: page && limit ? (page - 1) * limit : undefined,
       take: limit,
       orderBy: { createdAt: 'desc' },
     })
 
-    const totalProjects = await this.projectRepository.searchProjects(searchTerm, organizationId)
+    const totalProjects = await this.projectRepository.search(searchTerm, organizationId)
     const total = totalProjects.length
 
     return { projects, total }

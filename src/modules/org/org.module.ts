@@ -3,38 +3,41 @@ import { Module } from '@nestjs/common'
 import { UserPrismaRepository } from '@/modules/user/infrastructure/repositories/user-prisma.repository'
 
 import {
-  CreateOrgHandler,
-  InviteMemberByEmailHandler,
-  InviteMemberHandler,
-  RespondInvitationHandler,
-  UpdateOrgHandler,
+  CreateOrgCommandHandler,
+  InviteMemberByEmailCommandHandler,
+  InviteOrgMemberCommandHandler,
+  RespondOrgInvitationCommandHandler,
+  UpdateOrgCommandHandler,
 } from './application/commands/handlers'
 import {
-  GetAllOrgsQueryHandler,
+  GetOrgByIdQueryHandler,
+  GetOrgBySlugQueryHandler,
+  GetOrgInvitationsQueryHandler,
   GetOrgMembersQueryHandler,
-  GetOrgQueryHandler,
-  GetUserInvitationsQueryHandler,
+  GetOrgsQueryHandler,
 } from './application/queries/handlers/'
 import { OrganizationRoleGuard } from './domain/guards'
+import { OrgMemberPrismaRepository } from './infrastructure/repositories/org-member-prisma.repository'
 import { OrgPrismaRepository } from './infrastructure/repositories/org-prisma.repository'
-import { OrgMemberPrismaRepository } from './infrastructure/repositories/orgMember-prisma.repository'
+import { OrgMemberController } from './presentation/controllers/org-member.controller'
 import { OrgController } from './presentation/controllers/org.controller'
 const COMMAND_HANDLERS = [
-  CreateOrgHandler,
-  UpdateOrgHandler,
-  InviteMemberHandler,
-  InviteMemberByEmailHandler,
-  RespondInvitationHandler,
+  CreateOrgCommandHandler,
+  InviteMemberByEmailCommandHandler,
+  InviteOrgMemberCommandHandler,
+  RespondOrgInvitationCommandHandler,
+  UpdateOrgCommandHandler,
 ]
 const QUERY_HANDLERS = [
-  GetOrgQueryHandler,
-  GetAllOrgsQueryHandler,
+  GetOrgByIdQueryHandler,
+  GetOrgBySlugQueryHandler,
+  GetOrgInvitationsQueryHandler,
   GetOrgMembersQueryHandler,
-  GetUserInvitationsQueryHandler,
+  GetOrgsQueryHandler,
 ]
 @Module({
   imports: [],
-  controllers: [OrgController],
+  controllers: [OrgController, OrgMemberController],
   providers: [
     ...QUERY_HANDLERS,
     ...COMMAND_HANDLERS,

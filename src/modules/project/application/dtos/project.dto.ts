@@ -1,4 +1,17 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator'
+import { Transform } from 'class-transformer'
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator'
+
+import { PaginationDto } from '@/shared/common/dtos/pagination.dto'
+
+import { ProjectViewType } from '../../domain/enums/project-view-type.enum'
 
 export class CreateProjectDto {
   @IsNotEmpty()
@@ -6,8 +19,17 @@ export class CreateProjectDto {
   name: string
 
   @IsNotEmpty()
-  @IsUUID()
+  @IsUUID(7)
   organizationId: string
+
+  @IsArray()
+  @IsEnum(ProjectViewType, { each: true })
+  projectViews: ProjectViewType[]
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID(7)
+  members?: string[]
 
   @IsOptional()
   @IsString()
@@ -50,6 +72,22 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsBoolean()
   countProjectTask?: boolean
+}
+
+export class ArchiveProjectDto {
+  @IsNotEmpty()
+  @IsBoolean()
+  isArchived: boolean
+}
+export class ProjectListQueryDto extends PaginationDto {
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ obj, key }) => obj[key] === 'true')
+  isArchived?: boolean
+
+  @IsNotEmpty()
+  @IsUUID(7)
+  organizationId: string
 }
 
 export class ProjectResponseDto {

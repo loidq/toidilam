@@ -6,34 +6,37 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
-  Request,
+  Req,
   UseGuards,
 } from '@nestjs/common'
 import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { Request } from 'express'
 
+import { IJwtPayload } from '@/modules/auth/application/services/jwt.service'
 import { JwtAuthGuard } from '@/modules/auth/domain/guards/jwt-auth.guard'
+import { ProjectIdDto } from '@/shared/common/dtos/id.dto'
 import { ResponseBuilderService } from '@/shared/common/services/response-builder.service'
 
 import {
   ArchiveProjectCommand,
   CreateProjectCommand,
   DeleteProjectCommand,
-  UnarchiveProjectCommand,
   UpdateProjectCommand,
 } from '../../application/commands'
-import { CreateProjectDto, UpdateProjectDto } from '../../application/dtos'
 import {
-  GetProjectQuery,
-  GetProjectsByOrganizationQuery,
-  GetUserProjectsQuery,
-  SearchProjectsQuery,
-} from '../../application/queries'
+  ArchiveProjectDto,
+  CreateProjectDto,
+  ProjectListQueryDto,
+  UpdateProjectDto,
+} from '../../application/dtos'
+import { GetProjectByIdQuery, GetProjectsQuery } from '../../application/queries'
 
-@ApiTags('Projects')
+@ApiTags('Project')
 @ApiBearerAuth()
-@Controller('projects')
+@Controller('project')
 @UseGuards(JwtAuthGuard)
 export class ProjectController {
   constructor(
@@ -45,144 +48,100 @@ export class ProjectController {
   @Post()
   async createProject(
     @Body() createProjectDto: CreateProjectDto,
-    @Request() req: any,
+    @Req() req: Request,
   ): Promise<any> {
-    const userId = req.user?.id as string
-    const command = new CreateProjectCommand(
-      createProjectDto.name,
-      createProjectDto.organizationId,
-      userId,
-      createProjectDto.desc,
-      createProjectDto.cover,
-      createProjectDto.icon,
-    )
+    const { userId } = req.user as IJwtPayload
+    const { name, organizationId, projectViews, members, desc, cover, icon } = createProjectDto
+    const command = new CreateProjectCommand({
+      name,
+      organizationId,
+      createdBy: userId,
+      projectViews,
+      members,
+      desc,
+      cover,
+      icon,
+    })
 
     const project = await this.commandBus.execute(command)
-    return this.responseBuilder.success(project, 'Project created successfully')
+    return this.responseBuilder.created(project, 'Project created successfully')
   }
 
-  @Get(':id')
-  async getProject(@Param('id') id: string): Promise<any> {
-    const query = new GetProjectQuery(id)
-    const project = await this.queryBus.execute(query)
-    return this.responseBuilder.success(project, 'Project retrieved successfully')
-  }
-
-  @Patch(':id')
+  @Put(':projectId')
   async updateProject(
-    @Param('id') id: string,
+    @Param() { projectId }: ProjectIdDto,
     @Body() updateProjectDto: UpdateProjectDto,
-    @Request() req: any,
+    @Req() req: Request,
   ): Promise<any> {
-    const userId = req.user?.id as string
-    const command = new UpdateProjectCommand(
-      id,
-      userId,
-      updateProjectDto.name,
-      updateProjectDto.desc,
-      updateProjectDto.cover,
-      updateProjectDto.icon,
-      updateProjectDto.isArchived,
-      updateProjectDto.countMemberTask,
-      updateProjectDto.countProjectTask,
-    )
+    const { userId } = req.user as IJwtPayload
+    const { name, desc, cover, icon, isArchived, countMemberTask, countProjectTask } =
+      updateProjectDto
+    const command = new UpdateProjectCommand({
+      name,
+      desc,
+      cover,
+      icon,
+      isArchived,
+      countMemberTask,
+      countProjectTask,
+      projectId: projectId,
+      updatedBy: userId,
+    })
 
     const project = await this.commandBus.execute(command)
     return this.responseBuilder.success(project, 'Project updated successfully')
   }
+  @Get()
+  async getProjectList(
+    @Query() { page, limit, isArchived, organizationId }: ProjectListQueryDto,
+  ): Promise<any> {
+    console.log('Fetching project list with params:', { page, limit, isArchived, organizationId })
+    const query = new GetProjectsQuery({
+      organizationId,
+      isArchived,
+      page,
+      limit,
+    })
+    const result = await this.queryBus.execute(query)
+    const { projects, total } = result as { projects: any[]; total: number }
+    return this.responseBuilder.success(projects, 'Projects retrieved successfully', {
+      total,
+      page,
+      limit,
+    })
+  }
 
-  @Delete(':id')
-  async deleteProject(@Param('id') id: string, @Request() req: any): Promise<any> {
-    const userId = req.user?.id as string
-    const command = new DeleteProjectCommand(id, userId)
+  @Get(':projectId')
+  async getProject(@Param() { projectId }: ProjectIdDto): Promise<any> {
+    const query = new GetProjectByIdQuery(projectId)
+    const project = await this.queryBus.execute(query)
+    return this.responseBuilder.success(project, 'Project retrieved successfully')
+  }
+
+  @Delete(':projectId')
+  async deleteProject(@Param() { projectId }: ProjectIdDto, @Req() req: Request): Promise<any> {
+    const { userId } = req.user as IJwtPayload
+    const command = new DeleteProjectCommand({
+      projectId,
+      deletedBy: userId,
+    })
     await this.commandBus.execute(command)
     return this.responseBuilder.success(null, 'Project deleted successfully')
   }
 
-  @Post(':id/archive')
-  async archiveProject(@Param('id') id: string, @Request() req: any): Promise<any> {
-    const userId = req.user?.id as string
-    const command = new ArchiveProjectCommand(id, userId)
+  @Patch(':projectId/archive')
+  async archiveProject(
+    @Param() { projectId }: ProjectIdDto,
+    @Body() { isArchived }: ArchiveProjectDto,
+    @Req() req: Request,
+  ): Promise<any> {
+    const { userId } = req.user as IJwtPayload
+    const command = new ArchiveProjectCommand({
+      projectId,
+      archivedBy: userId,
+      isArchived,
+    })
     await this.commandBus.execute(command)
     return this.responseBuilder.success(null, 'Project archived successfully')
-  }
-
-  @Post(':id/unarchive')
-  async unarchiveProject(@Param('id') id: string, @Request() req: any): Promise<any> {
-    const userId = req.user?.id as string
-    const command = new UnarchiveProjectCommand(id, userId)
-    await this.commandBus.execute(command)
-    return this.responseBuilder.success(null, 'Project unarchived successfully')
-  }
-
-  @Get('organization/:organizationId')
-  async getProjectsByOrganization(
-    @Param('organizationId') organizationId: string,
-    @Query('includeArchived') includeArchived?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ): Promise<any> {
-    const query = new GetProjectsByOrganizationQuery(
-      organizationId,
-      includeArchived === 'true',
-      page ? parseInt(page, 10) : undefined,
-      limit ? parseInt(limit, 10) : undefined,
-    )
-
-    const result = await this.queryBus.execute(query)
-    const { projects, total } = result as { projects: any[]; total: number }
-
-    return this.responseBuilder.success(projects, 'Projects retrieved successfully', {
-      total,
-      page: page ? parseInt(page, 10) : undefined,
-      limit: limit ? parseInt(limit, 10) : undefined,
-    })
-  }
-
-  @Get('search/:organizationId')
-  async searchProjects(
-    @Param('organizationId') organizationId: string,
-    @Query('q') searchTerm: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ): Promise<any> {
-    const query = new SearchProjectsQuery(
-      searchTerm,
-      organizationId,
-      page ? parseInt(page, 10) : undefined,
-      limit ? parseInt(limit, 10) : undefined,
-    )
-
-    const result = await this.queryBus.execute(query)
-    const { projects, total } = result as { projects: any[]; total: number }
-    return this.responseBuilder.success(projects, 'Projects retrieved successfully', {
-      total,
-      page: page ? parseInt(page, 10) : undefined,
-      limit: limit ? parseInt(limit, 10) : undefined,
-    })
-  }
-
-  @Get('user/:organizationId')
-  async getUserProjects(
-    @Param('organizationId') organizationId: string,
-    @Request() req: any,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ): Promise<any> {
-    const userId = req.user?.id as string
-    const query = new GetUserProjectsQuery(
-      userId,
-      organizationId,
-      page ? parseInt(page, 10) : undefined,
-      limit ? parseInt(limit, 10) : undefined,
-    )
-
-    const result = await this.queryBus.execute(query)
-    const { projects, total } = result as { projects: any[]; total: number }
-    return this.responseBuilder.success(projects, 'User projects retrieved successfully', {
-      total,
-      page: page ? parseInt(page, 10) : undefined,
-      limit: limit ? parseInt(limit, 10) : undefined,
-    })
   }
 }

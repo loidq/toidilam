@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { Prisma, Project as PrismaProject } from '@prisma/client'
+import { Prisma, Project as PrismaProject, ProjectView as PrismaProjectView } from '@prisma/client'
 
 import { BasePrismaRepository } from '@/infrastructure/prisma/base/base-prisma.repository'
 import { PrismaService } from '@/infrastructure/prisma/prisma.service'
@@ -11,10 +11,9 @@ import {
   ProjectWhereUniqueInput,
 } from '@/infrastructure/prisma/types/project-query-options.types'
 
+import { ProjectViewEntity } from '../../domain/entities/project-view.entity'
 import { ProjectEntity } from '../../domain/entities/project.entity'
 import { IProjectRepository } from '../../domain/repositories/project.repository'
-import { ProjectMapper } from '../mappers/project.mapper'
-
 @Injectable()
 export class ProjectPrismaRepository
   extends BasePrismaRepository<
@@ -36,47 +35,65 @@ export class ProjectPrismaRepository
   }
 
   // Implement abstract mapper methods
-  protected toDomain(prismaProject: PrismaProject): ProjectEntity {
-    return ProjectMapper.toDomain(prismaProject)
+  protected toDomain(
+    prismaProject: PrismaProject & {
+      projectViews: PrismaProjectView[]
+    },
+  ): ProjectEntity {
+    return new ProjectEntity({
+      id: prismaProject.id,
+      name: prismaProject.name,
+      organizationId: prismaProject.organizationId,
+      desc: prismaProject.desc ?? undefined,
+      cover: prismaProject.cover ?? undefined,
+      icon: prismaProject.icon ?? undefined,
+      isArchived: prismaProject.isArchived,
+      isDeleted: prismaProject.isDeleted,
+      deletedAt: prismaProject.deletedAt ?? undefined,
+      countMemberTask: prismaProject.countMemberTask,
+      countProjectTask: prismaProject.countProjectTask,
+      createdAt: prismaProject.createdAt,
+      updatedAt: prismaProject.updatedAt,
+      createdBy: prismaProject.createdBy,
+      updatedBy: prismaProject.updatedBy ?? undefined,
+
+      projectViews:
+        prismaProject.projectViews?.map(
+          view =>
+            new ProjectViewEntity({
+              id: view.id,
+              name: view.name ?? undefined,
+              type: view.type as ProjectViewEntity['type'],
+              onlyMe: view.onlyMe,
+              icon: view.icon ?? undefined,
+              projectId: view.projectId,
+              order: view.order ?? undefined,
+              data: view.data as ProjectViewEntity['data'],
+              createdAt: view.createdAt,
+              updatedAt: view.updatedAt,
+              createdBy: view.createdBy,
+              updatedBy: view.updatedBy ?? undefined,
+            }),
+        ) ?? undefined,
+    })
   }
 
-  protected toPrismaCreate(project: Omit<ProjectEntity, 'id'>): ProjectCreateInput {
+  protected toPrismaCreate(data: ProjectEntity): ProjectCreateInput {
     return {
-      name: project.name,
-      desc: project.desc || null,
-      cover: project.cover || null,
-      icon: project.icon || null,
-      isArchived: project.isArchived,
-      countMemberTask: project.countMemberTask,
-      countProjectTask: project.countProjectTask,
-      createdBy: project.createdBy,
+      name: data.name,
+      desc: data.desc,
+      cover: data.cover,
+      icon: data.icon,
+      isArchived: data.isArchived,
+      countMemberTask: data.countMemberTask,
+      countProjectTask: data.countProjectTask,
+      createdBy: data.createdBy,
       organization: {
-        connect: { id: project.organizationId },
+        connect: { id: data.organizationId },
       },
     }
   }
 
-  protected toPrismaUpdate(projectEntity: ProjectEntity): ProjectUpdateInput {
-    const updateData: ProjectUpdateInput = {
-      name: projectEntity.name,
-      desc: projectEntity.desc,
-      cover: projectEntity.cover,
-      icon: projectEntity.icon,
-      isArchived: projectEntity.isArchived,
-      countMemberTask: projectEntity.countMemberTask,
-      countProjectTask: projectEntity.countProjectTask,
-      updatedBy: projectEntity.updatedBy,
-    }
-
-    Object.keys(updateData).forEach(key => {
-      if (updateData[key as keyof ProjectUpdateInput] === undefined) {
-        delete updateData[key as keyof ProjectUpdateInput]
-      }
-    })
-    return updateData
-  }
-
-  // Custom methods specific to project
   async findById(id: string, options?: ProjectBaseQueryOptions): Promise<ProjectEntity | null> {
     return this.findUnique({ id }, options)
   }
@@ -106,52 +123,37 @@ export class ProjectPrismaRepository
     })
   }
 
-  async findArchivedProjects(
-    organizationId: string,
-    options?: ProjectFindQueryOptions,
-  ): Promise<ProjectEntity[]> {
-    return this.findMany({
-      where: {
-        organizationId,
-        isArchived: true,
-      },
-      ...options,
-    })
+  async create(data: ProjectEntity): Promise<ProjectEntity> {
+    return super.create(data)
   }
 
-  async findActiveProjects(
-    organizationId: string,
-    options?: ProjectFindQueryOptions,
-  ): Promise<ProjectEntity[]> {
-    return this.findMany({
-      where: {
-        organizationId,
-        isArchived: false,
-      },
-      ...options,
-    })
+  async update(
+    where: ProjectWhereUniqueInput,
+    data: Partial<ProjectEntity>,
+  ): Promise<ProjectEntity> {
+    return super.update(where, data)
   }
 
-  async createProject(project: ProjectEntity): Promise<ProjectEntity> {
-    return this.create(this.toPrismaCreate(project))
+  async delete(where: ProjectWhereUniqueInput): Promise<boolean> {
+    return super.delete(where)
   }
 
-  async updateProject(project: ProjectEntity): Promise<ProjectEntity> {
-    return this.update({ id: project.id }, this.toPrismaUpdate(project))
+  async softDelete(where: ProjectWhereUniqueInput): Promise<boolean> {
+    return super.softDelete(where)
   }
-
-  async deleteProject(id: string): Promise<boolean> {
-    return this.delete({ id })
-  }
-
-  async archiveProject(id: string, updatedBy: string): Promise<boolean> {
+  async archive(
+    projectId: string,
+    data: {
+      updatedBy: string
+      isArchived: boolean
+    },
+  ): Promise<boolean> {
     try {
-      await this.update(
-        { id },
+      await super.update(
         {
-          isArchived: true,
-          updatedBy,
+          id: projectId,
         },
+        { isArchived: data.isArchived, updatedBy: data.updatedBy },
       )
       return true
     } catch {
@@ -159,31 +161,19 @@ export class ProjectPrismaRepository
     }
   }
 
-  async unarchiveProject(id: string, updatedBy: string): Promise<boolean> {
-    try {
-      await this.update(
-        { id },
-        {
-          isArchived: false,
-          updatedBy,
-        },
-      )
-      return true
-    } catch {
-      return false
-    }
-  }
-
-  async existsById(id: string): Promise<boolean> {
-    return this.exists({ id })
+  async existsById(projectId: string): Promise<boolean> {
+    return this.exists({ id: projectId })
   }
 
   async existsByName(name: string, organizationId: string): Promise<boolean> {
     return this.exists({ name, organizationId })
   }
 
-  async countByOrganization(organizationId: string): Promise<number> {
-    return this.count({ where: { organizationId } })
+  async countByOrganization(
+    organizationId: string,
+    options?: ProjectFindQueryOptions,
+  ): Promise<number> {
+    return this.count({ where: { organizationId }, ...options })
   }
 
   async countArchivedByOrganization(organizationId: string): Promise<number> {
@@ -222,7 +212,7 @@ export class ProjectPrismaRepository
     })
   }
 
-  async searchProjects(
+  async search(
     searchTerm: string,
     organizationId: string,
     options?: ProjectFindQueryOptions,
