@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common'
-import { Prisma, Project as PrismaProject, ProjectView as PrismaProjectView } from '@prisma/client'
+import {
+  Prisma,
+  Member as PrismaMember,
+  Project as PrismaProject,
+  ProjectView as PrismaProjectView,
+} from '@prisma/client'
 
 import { BasePrismaRepository } from '@/infrastructure/prisma/base/base-prisma.repository'
 import { PrismaService } from '@/infrastructure/prisma/prisma.service'
@@ -11,6 +16,7 @@ import {
   ProjectWhereUniqueInput,
 } from '@/infrastructure/prisma/types/project-query-options.types'
 
+import { MemberEntity } from '../../domain/entities/member.entity'
 import { ProjectViewEntity } from '../../domain/entities/project-view.entity'
 import { ProjectEntity } from '../../domain/entities/project.entity'
 import { IProjectRepository } from '../../domain/repositories/project.repository'
@@ -38,6 +44,7 @@ export class ProjectPrismaRepository
   protected toDomain(
     prismaProject: PrismaProject & {
       projectViews: PrismaProjectView[]
+      members: PrismaMember[]
     },
   ): ProjectEntity {
     return new ProjectEntity({
@@ -56,7 +63,23 @@ export class ProjectPrismaRepository
       updatedAt: prismaProject.updatedAt,
       createdBy: prismaProject.createdBy,
       updatedBy: prismaProject.updatedBy ?? undefined,
-
+      members:
+        prismaProject.members?.map(
+          member =>
+            new MemberEntity({
+              id: member.id,
+              userId: member.userId,
+              projectId: member.projectId,
+              role: member.role as MemberEntity['role'],
+              createdAt: member.createdAt,
+              updatedAt: member.updatedAt,
+              createdBy: member.createdBy,
+              updatedBy: member.updatedBy ?? undefined,
+              isRemoved: member.isRemoved,
+              removedAt: member.removedAt ?? undefined,
+              removedBy: member.removedBy ?? undefined,
+            }),
+        ) ?? undefined,
       projectViews:
         prismaProject.projectViews?.map(
           view =>
@@ -91,6 +114,13 @@ export class ProjectPrismaRepository
       organization: {
         connect: { id: data.organizationId },
       },
+      members: {
+        create: data.members.map(member => ({
+          userId: member.userId,
+          role: member.role,
+          createdBy: member.createdBy,
+        })),
+      },
     }
   }
 
@@ -102,45 +132,6 @@ export class ProjectPrismaRepository
     return this.findFirst(options)
   }
 
-  async findByName(
-    name: string,
-    organizationId: string,
-    options?: ProjectBaseQueryOptions,
-  ): Promise<ProjectEntity | null> {
-    return this.findFirst({
-      where: { name, organizationId },
-      ...options,
-    })
-  }
-
-  async findByOrganizationId(
-    organizationId: string,
-    options?: ProjectFindQueryOptions,
-  ): Promise<ProjectEntity[]> {
-    return this.findMany({
-      where: { organizationId },
-      ...options,
-    })
-  }
-
-  async create(data: ProjectEntity): Promise<ProjectEntity> {
-    return super.create(data)
-  }
-
-  async update(
-    where: ProjectWhereUniqueInput,
-    data: Partial<ProjectEntity>,
-  ): Promise<ProjectEntity> {
-    return super.update(where, data)
-  }
-
-  async delete(where: ProjectWhereUniqueInput): Promise<boolean> {
-    return super.delete(where)
-  }
-
-  async softDelete(where: ProjectWhereUniqueInput): Promise<boolean> {
-    return super.softDelete(where)
-  }
   async archive(
     projectId: string,
     data: {
@@ -163,53 +154,6 @@ export class ProjectPrismaRepository
 
   async existsById(projectId: string): Promise<boolean> {
     return this.exists({ id: projectId })
-  }
-
-  async existsByName(name: string, organizationId: string): Promise<boolean> {
-    return this.exists({ name, organizationId })
-  }
-
-  async countByOrganization(
-    organizationId: string,
-    options?: ProjectFindQueryOptions,
-  ): Promise<number> {
-    return this.count({ where: { organizationId }, ...options })
-  }
-
-  async countArchivedByOrganization(organizationId: string): Promise<number> {
-    return this.count({
-      where: {
-        organizationId,
-        isArchived: true,
-      },
-    })
-  }
-
-  async hasUserAccess(projectId: string, userId: string): Promise<boolean> {
-    const member = await this.model.findFirst({
-      where: {
-        id: projectId,
-        members: {
-          some: {
-            userId,
-          },
-        },
-      },
-    })
-    return !!member
-  }
-
-  async getUserProjectsByRole(userId: string, organizationId: string): Promise<ProjectEntity[]> {
-    return this.findMany({
-      where: {
-        organizationId,
-        members: {
-          some: {
-            userId,
-          },
-        },
-      },
-    })
   }
 
   async search(
