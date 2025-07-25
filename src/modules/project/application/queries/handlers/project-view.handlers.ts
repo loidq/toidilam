@@ -16,9 +16,15 @@ export class GetProjectViewsQueryHandler implements IQueryHandler<GetProjectView
 
   async execute({ projectId, userId, onlyMe }: GetProjectViewsQuery): Promise<ProjectViewEntity[]> {
     if (onlyMe && userId) {
-      return await this.projectViewRepository.findByProjectIdAndUserId(projectId, userId, onlyMe)
+      return await this.projectViewRepository.findMany({
+        where: { projectId, onlyMe, createdBy: userId },
+        orderBy: { order: 'asc' },
+      })
     }
-    return await this.projectViewRepository.findByProjectId(projectId)
+    return await this.projectViewRepository.findMany({
+      where: { projectId, onlyMe: false },
+      orderBy: { order: 'asc' },
+    })
   }
 }
 

@@ -7,3 +7,12 @@ export class GetMembersQuery {
     Object.assign(this, props)
   }
 }
+
+export class GetMemberQuery {
+  public readonly projectId: string
+  public readonly userId: string
+
+  constructor(props: { projectId: string; userId: string }) {
+    Object.assign(this, props)
+  }
+}
