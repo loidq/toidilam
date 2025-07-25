@@ -23,6 +23,7 @@ export abstract class BasePrismaRepository<
   TScalarFieldEnum,
   TAggregateArgs,
   TOmit = {},
+  TCreateManyInput = any,
 > implements
     IBaseRepository<
       TEntity,
@@ -50,6 +51,7 @@ export abstract class BasePrismaRepository<
   // Abstract mapper methods - phải implement ở child class
   protected abstract toDomain(prismaEntity: any): TEntity
   protected abstract toPrismaCreate(entity: TEntity): TCreateInput
+  protected toPrismaCreateManyInput?(entity: TEntity): TCreateManyInput
   protected toPrismaUpdate(data: Partial<TEntity>): TUpdateInput {
     return data as unknown as TUpdateInput
   }
@@ -93,9 +95,9 @@ export abstract class BasePrismaRepository<
     return this.toDomain(result)
   }
 
-  async createMany(data: TEntity[]): Promise<TEntity[]> {
+  async createMany(datas: TEntity[]): Promise<TEntity[]> {
     return await this.model.createMany({
-      data: data.map(item => this.toPrismaCreate(item)),
+      data: datas.map(item => deepCleanObject(this.toPrismaCreateManyInput!(item))),
       skipDuplicates: true,
     })
   }
@@ -103,7 +105,6 @@ export abstract class BasePrismaRepository<
   async update(where: TWhereUniqueInput, data: Partial<TEntity>): Promise<TEntity> {
     const prismaData = this.toPrismaUpdate(data)
     const result = await this.model.update({ where, data: deepCleanObject(prismaData) })
-
     return this.toDomain(result)
   }
 

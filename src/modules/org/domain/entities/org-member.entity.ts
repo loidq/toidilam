@@ -1,4 +1,4 @@
-import { OrgRole } from '@/modules/org/domain/entities/org.entity'
+import { OrgRole } from './org.entity'
 
 export enum InvitationStatus {
   REJECTED = 'REJECTED',
@@ -13,7 +13,9 @@ export class OrgMemberEntity {
   public readonly createdBy: string
   public readonly createdAt?: Date
   public readonly updatedAt?: Date
-
+  public readonly removedAt?: Date
+  public readonly isRemoved: boolean = false
+  public readonly removedBy?: string
   public readonly status: InvitationStatus
   public readonly role: OrgRole
   public readonly updatedBy?: string
@@ -28,21 +30,14 @@ export class OrgMemberEntity {
     updatedBy?: string
     createdAt?: Date
     updatedAt?: Date
+    removedAt?: Date
+    isRemoved?: boolean
+    removedBy?: string
   }) {
-    this.id = props.id
-    this.organizationId = props.organizationId
-    this.userId = props.userId
-    this.status = props.status
-    this.role = props.role
-    this.createdBy = props.createdBy
-    this.updatedBy = props.updatedBy
-    this.createdAt = props.createdAt
-    this.updatedAt = props.updatedAt
+    Object.assign(this, props)
   }
 
-  // Factory method tạo mới OrgMemberEntity
   static create(data: {
-    id?: string
     organizationId: string
     userId: string
     status?: InvitationStatus
@@ -51,7 +46,6 @@ export class OrgMemberEntity {
     updatedBy?: string
   }): OrgMemberEntity {
     return new OrgMemberEntity({
-      id: data.id,
       organizationId: data.organizationId,
       userId: data.userId,
       status: data.status ?? InvitationStatus.INVITING,

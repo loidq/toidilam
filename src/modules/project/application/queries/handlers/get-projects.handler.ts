@@ -18,25 +18,25 @@ export class GetProjectsQueryHandler implements IQueryHandler<GetProjectsQuery> 
 
     let projects: ProjectEntity[]
     if (isArchived) {
-      projects = await this.projectRepository.findByOrganizationId(organizationId, {
-        where: { isDeleted: false },
+      projects = await this.projectRepository.findMany({
+        where: { isDeleted: false, organizationId },
         skip: page && limit ? (page - 1) * limit : undefined,
         take: limit,
         orderBy: { createdAt: 'desc' },
       })
     } else
-      projects = await this.projectRepository.findByOrganizationId(organizationId, {
-        where: { isArchived: false, isDeleted: false },
+      projects = await this.projectRepository.findMany({
+        where: { isArchived: false, isDeleted: false, organizationId },
         skip: page && limit ? (page - 1) * limit : undefined,
         take: limit,
         orderBy: { createdAt: 'desc' },
       })
 
-    const total = await this.projectRepository.countByOrganization(
-      organizationId,
-      isArchived ? {} : { where: { isArchived: false } },
+    const total = await this.projectRepository.count(
+      isArchived
+        ? { where: { isDeleted: false, organizationId } }
+        : { where: { isArchived: false, isDeleted: false, organizationId } },
     )
-
     return { projects, total }
   }
 }

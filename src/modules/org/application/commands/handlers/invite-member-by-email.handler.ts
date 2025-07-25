@@ -63,7 +63,6 @@ export class InviteMemberByEmailCommandHandler
     }
 
     const invitation = OrgMemberEntity.create({
-      id: '',
       organizationId,
       userId,
       status: InvitationStatus.INVITING,

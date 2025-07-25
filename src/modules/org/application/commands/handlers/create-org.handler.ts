@@ -16,7 +16,6 @@ export class CreateOrgCommandHandler implements ICommandHandler<CreateOrgCommand
     const { name, slug, desc, cover, avatar, maxStorageSize, createdBy } = command
 
     const createOrgMember = OrgMemberEntity.create({
-      id: '',
       organizationId: '',
       userId: createdBy,
       status: InvitationStatus.ACCEPTED,
@@ -25,7 +24,6 @@ export class CreateOrgCommandHandler implements ICommandHandler<CreateOrgCommand
     })
 
     const createOrg = OrgEntity.create({
-      id: '',
       name,
       slug,
       desc,

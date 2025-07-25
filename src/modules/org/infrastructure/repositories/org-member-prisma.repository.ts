@@ -43,6 +43,9 @@ export class OrgMemberPrismaRepository
       role: data.role as OrgMemberEntity['role'],
       createdBy: data.createdBy,
       updatedBy: data.updatedBy ?? undefined,
+      isRemoved: data.isRemoved,
+      removedAt: data.removedAt ?? undefined,
+      removedBy: data.removedBy ?? undefined,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     })
@@ -72,25 +75,18 @@ export class OrgMemberPrismaRepository
     return this.findFirst(options)
   }
 
-  async create(data: OrgMemberEntity): Promise<OrgMemberEntity> {
-    return super.create(data)
-  }
-
-  async update(
-    where: OrgMemberWhereUniqueInput,
-    data: Partial<OrgMemberEntity>,
-  ): Promise<OrgMemberEntity> {
-    return super.update(where, data)
-  }
-
-  async softDelete(where: OrgMemberWhereUniqueInput): Promise<boolean> {
-    return super.softDelete(where)
-  }
-  async delete(where: OrgMemberWhereUniqueInput): Promise<boolean> {
-    return super.delete(where)
-  }
-
   async existsById(id: string): Promise<boolean> {
     return this.exists({ id })
+  }
+
+  async restore(where: OrgMemberWhereUniqueInput, restoredBy: string): Promise<OrgMemberEntity> {
+    return await this.update(where, { isRemoved: false, updatedBy: restoredBy })
+  }
+
+  async removeMember(
+    where: OrgMemberWhereUniqueInput,
+    removedBy: string,
+  ): Promise<OrgMemberEntity> {
+    return await this.update(where, { isRemoved: true, removedBy, updatedBy: removedBy })
   }
 }

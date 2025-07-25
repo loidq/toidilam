@@ -111,29 +111,11 @@ export class OrgPrismaRepository
     return this.findFirst(options)
   }
 
-  async findMany(options: OrgFindQueryOptions): Promise<OrgEntity[]> {
-    return super.findMany(options)
-  }
-
-  async create(org: OrgEntity): Promise<OrgEntity> {
-    return super.create(org)
-  }
-
-  async update(where: OrgWhereUniqueInput, data: OrgEntity): Promise<OrgEntity> {
-    return super.update(where, data)
-  }
-  async softDeleteOrg(id: string): Promise<boolean> {
-    return this.softDelete({ id })
-  }
-  async delete(where: OrgWhereUniqueInput): Promise<boolean> {
-    return super.delete(where)
-  }
-
   async existsById(id: string): Promise<boolean> {
-    return super.exists({ id })
+    return this.exists({ id })
   }
 
   async existsBySlug(slug: string): Promise<boolean> {
-    return super.exists({ slug })
+    return this.exists({ slug })
   }
 }

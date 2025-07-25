@@ -1,6 +1,6 @@
-export * from './get-members.handler'
+// export * from './get-members.handler'
 export * from './get-project-by-id.handler'
-export * from './get-projects-by-user.handler'
 export * from './get-projects.handler'
+export * from './member.handlers'
 export * from './project-view.handlers'
 export * from './search-projects.handler'

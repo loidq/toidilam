@@ -31,9 +31,7 @@ export class RespondOrgInvitationDto {
   @IsNotEmpty()
   invitationId: string
 
-  @IsEnum(InvitationStatus, {
-    each: true,
-  })
+  @IsEnum(InvitationStatus)
   status: InvitationStatus.ACCEPTED | InvitationStatus.REJECTED
 }
 
