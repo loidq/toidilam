@@ -59,7 +59,6 @@ export class InviteOrgMemberCommandHandler implements ICommandHandler<InviteOrgM
     }
 
     const invitation = OrgMemberEntity.create({
-      id: '',
       organizationId,
       userId,
       status: InvitationStatus.INVITING,

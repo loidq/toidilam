@@ -146,7 +146,7 @@ export class OrgController {
     return this.responseBuilder.success(org, 'Organization updated successfully')
   }
 
-  @Get('invitation')
+  @Get('invitation/list')
   @ApiOperation({ summary: 'Get current user invitations' })
   @ApiResponse({
     status: 200,

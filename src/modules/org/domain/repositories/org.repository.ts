@@ -18,6 +18,7 @@ export interface IOrgRepository {
   create(data: OrgEntity): Promise<OrgEntity>
   update(where: OrgWhereUniqueInput, data: Partial<OrgEntity>): Promise<OrgEntity>
   delete(where: OrgWhereUniqueInput): Promise<boolean>
+  softDelete(where: OrgWhereUniqueInput): Promise<boolean>
   // Existence checks
   existsById(id: string): Promise<boolean>
   existsBySlug(slug: string): Promise<boolean>
