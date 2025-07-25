@@ -1,3 +1,4 @@
+export * from './member-query-options.types'
 export * from './org-member-query-options.types'
 export * from './org-query-options.types'
 export * from './project-query-options.types'
