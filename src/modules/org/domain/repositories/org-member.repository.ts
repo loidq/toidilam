@@ -17,9 +17,12 @@ export interface IOrgMemberRepository {
   create(data: OrgMemberEntity): Promise<OrgMemberEntity>
   update(where: OrgMemberWhereUniqueInput, data: Partial<OrgMemberEntity>): Promise<OrgMemberEntity>
   delete(where: OrgMemberWhereUniqueInput): Promise<boolean>
+  removeMember(where: OrgMemberWhereUniqueInput, removedBy: string): Promise<OrgMemberEntity>
   // Existence checks
-  existsById(id: string): Promise<boolean>
+  existsById(orgMemberId: string): Promise<boolean>
 
   // Count operations
   count(options?: OrgMemberCountQueryOptions): Promise<number>
+
+  restore(where: OrgMemberWhereUniqueInput, restoredBy: string): Promise<OrgMemberEntity>
 }

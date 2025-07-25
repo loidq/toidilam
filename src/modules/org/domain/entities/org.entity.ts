@@ -7,7 +7,7 @@ export enum OrgRole {
 }
 
 export class OrgEntity {
-  public readonly id: string
+  public readonly id?: string
   public createdBy: string
   public createdAt?: Date
   public updatedAt?: Date
@@ -23,7 +23,7 @@ export class OrgEntity {
   public organizationMembers: OrgMemberEntity[]
 
   public constructor(props: {
-    id: string
+    id?: string
     name: string
     slug: string
     createdBy: string
@@ -36,23 +36,10 @@ export class OrgEntity {
     updatedAt?: Date
     organizationMembers?: OrgMemberEntity[]
   }) {
-    this.id = props.id
-    this.name = props.name
-    this.slug = props.slug
-    this.createdBy = props.createdBy
-    this.desc = props.desc
-    this.cover = props.cover
-    this.avatar = props.avatar
-    this.maxStorageSize = props.maxStorageSize
-    this.updatedBy = props.updatedBy
-    this.createdAt = props.createdAt
-    this.updatedAt = props.updatedAt
-    this.organizationMembers = props.organizationMembers ?? []
+    Object.assign(this, props)
   }
 
-  // Factory method tạo mới OrgEntity
   static create(data: {
-    id: string
     name: string
     slug: string
     createdBy: string
@@ -87,19 +74,5 @@ export class OrgEntity {
     if (data.maxStorageSize !== undefined) this.maxStorageSize = data.maxStorageSize
     if (data.updatedBy !== undefined) this.updatedBy = data.updatedBy
     return this
-    // return new OrgEntity({
-    //   id: this.id,
-    //   createdBy: this.createdBy,
-    //   createdAt: this.createdAt,
-    //   name: data.name ?? this.name,
-    //   slug: data.slug ?? this.slug,
-    //   desc: data.desc ?? this.desc,
-    //   cover: data.cover ?? this.cover,
-    //   avatar: data.avatar ?? this.avatar,
-    //   maxStorageSize: data.maxStorageSize ?? this.maxStorageSize,
-    //   updatedBy: data.updatedBy ?? this.updatedBy,
-    //   updatedAt: data.updatedAt ?? this.updatedAt,
-    //   organizationMembers: data.organizationMembers ?? this.organizationMembers,
-    // })
   }
 }
