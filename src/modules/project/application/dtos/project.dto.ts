@@ -28,7 +28,7 @@ export class CreateProjectDto {
 
   @IsOptional()
   @IsArray()
-  @IsUUID(7)
+  @IsUUID(7, { each: true })
   members?: string[]
 
   @IsOptional()
