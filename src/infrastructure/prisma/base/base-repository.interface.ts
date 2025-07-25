@@ -36,6 +36,7 @@ export interface IBaseRepository<
   ): Promise<TEntity[]>
 
   create(data: TEntity): Promise<TEntity>
+  createMany(entities: TEntity[]): Promise<TEntity[]>
   update(where: TWhereUniqueInput, data: Partial<TEntity>): Promise<TEntity>
   delete(where: TWhereUniqueInput): Promise<boolean>
   softDelete(where: TWhereUniqueInput): Promise<boolean>

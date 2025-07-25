@@ -11,7 +11,7 @@ export function deepCleanObject<T>(data: T): T {
   if (typeof data === 'object' && data !== null) {
     const result: any = {}
     Object.entries(data).forEach(([key, value]) => {
-      if (key === 'createdAt' || key === 'updatedAt' || key === 'id') return
+      if (key === 'createdAt' || key === 'updatedAt') return
       if (value === null || value === undefined) return
       const cleaned = deepCleanObject(value)
       if (Array.isArray(cleaned) && cleaned.length === 0) return
