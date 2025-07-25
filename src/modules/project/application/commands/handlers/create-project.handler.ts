@@ -1,6 +1,11 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 
+import { IOrgRepository } from '@/modules/org/domain/repositories/org.repository'
+import { MemberEntity } from '@/modules/project/domain/entities/member.entity'
+import { MemberRole } from '@/modules/project/domain/enums/member.enum'
+import { IMemberRepository } from '@/modules/project/domain/repositories/member.repository'
+
 import { ProjectViewEntity } from '../../../domain/entities/project-view.entity'
 import { ProjectEntity } from '../../../domain/entities/project.entity'
 import { ProjectViewType } from '../../../domain/enums/project-view-type.enum'
@@ -19,7 +24,10 @@ export class CreateProjectCommandHandler implements ICommandHandler<CreateProjec
     private readonly projectViewRepository: IProjectViewRepository,
 
     @Inject('ORG_REPOSITORY')
-    private readonly organizationRepository: IProjectRepository,
+    private readonly organizationRepository: IOrgRepository,
+
+    @Inject('MEMBER_REPOSITORY')
+    private readonly memberRepository: IMemberRepository,
   ) {}
 
   async execute(command: CreateProjectCommand): Promise<ProjectEntity> {
@@ -39,7 +47,20 @@ export class CreateProjectCommandHandler implements ICommandHandler<CreateProjec
       icon,
     })
     const createdProject = await this.projectRepository.create(projectData)
-
+    const memberEntities =
+      members?.map(
+        memberId =>
+          new MemberEntity({
+            userId: memberId,
+            projectId: createdProject.id!,
+            role: createdBy == memberId ? MemberRole.LEADER : MemberRole.MEMBER,
+            createdBy,
+          }),
+      ) || []
+    // Add members to the project
+    if (memberEntities.length > 0) {
+      await this.memberRepository.createMany(memberEntities)
+    }
     if (projectViews && projectViews.length > 0) {
       const viewsToCreate = this.createProjectViewsFromTypes({
         projectId: createdProject.id!,

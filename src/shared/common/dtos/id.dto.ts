@@ -1,5 +1,5 @@
+import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmpty, IsUUID } from 'class-validator'
-
 export abstract class BaseIdDto {
   @IsNotEmpty()
   @IsUUID(7)
@@ -8,6 +8,7 @@ export abstract class BaseIdDto {
 export class ProjectIdDto {
   @IsNotEmpty()
   @IsUUID(7)
+  @ApiProperty()
   projectId: string
 }
 export class ProjectViewIdDto {
@@ -40,5 +41,6 @@ export class OrgMemberIdDto {
 export class MemberIdDto {
   @IsNotEmpty()
   @IsUUID(7)
+  @ApiProperty()
   memberId: string
 }

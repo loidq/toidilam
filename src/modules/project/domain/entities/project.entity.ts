@@ -1,3 +1,4 @@
+import { MemberEntity } from './member.entity'
 import { ProjectViewEntity } from './project-view.entity'
 
 export class ProjectEntity {
@@ -17,6 +18,7 @@ export class ProjectEntity {
   public createdBy: string
   public updatedBy?: string
   public projectViews: ProjectViewEntity[]
+  public members: MemberEntity[]
   constructor(props: {
     id?: string
     name: string
@@ -34,6 +36,7 @@ export class ProjectEntity {
     createdBy: string
     updatedBy?: string
     projectViews?: ProjectViewEntity[]
+    members?: MemberEntity[]
   }) {
     this.id = props.id
     this.name = props.name
@@ -51,6 +54,7 @@ export class ProjectEntity {
     this.createdBy = props.createdBy
     this.updatedBy = props.updatedBy
     this.projectViews = props.projectViews || []
+    this.members = props.members || []
   }
 
   static create(data: {
