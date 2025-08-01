@@ -7,6 +7,7 @@ import { UserController } from './presentation/controllers/user.controller'
 const COMMAND_HANDLERS = []
 const QUERY_HANDLERS = [GetUserByIdQueryHandler]
 @Module({
+  imports: [],
   controllers: [UserController],
   providers: [
     // ...COMMAND_HANDLERS,

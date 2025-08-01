@@ -1,5 +1,11 @@
+import { CommentEntity } from '../../../task/domain/entities/comment.entity'
+import { TaskEntity } from '../../../task/domain/entities/task.entity'
+import { FieldEntity } from './field.entity'
+import { GridEntity } from './grid.entity'
 import { MemberEntity } from './member.entity'
+import { ProjectSettingNotificationEntity } from './project-setting-notification.entity'
 import { ProjectViewEntity } from './project-view.entity'
+import { TagEntity } from './tag.entity'
 
 export class ProjectEntity {
   public readonly id?: string
@@ -17,8 +23,17 @@ export class ProjectEntity {
   public deletedAt?: Date
   public createdBy: string
   public updatedBy?: string
+
+  // Relations
   public projectViews: ProjectViewEntity[]
   public members: MemberEntity[]
+  public tasks: TaskEntity[]
+  public comments: CommentEntity[]
+  public tags: TagEntity[]
+  public fields: FieldEntity[]
+  public grids: GridEntity[]
+  public projectSettingNotifications: ProjectSettingNotificationEntity[]
+
   constructor(props: {
     id?: string
     name: string
@@ -37,6 +52,12 @@ export class ProjectEntity {
     updatedBy?: string
     projectViews?: ProjectViewEntity[]
     members?: MemberEntity[]
+    tasks?: TaskEntity[]
+    comments?: CommentEntity[]
+    tags?: TagEntity[]
+    fields?: FieldEntity[]
+    grids?: GridEntity[]
+    projectSettingNotifications?: ProjectSettingNotificationEntity[]
   }) {
     this.id = props.id
     this.name = props.name
@@ -55,6 +76,12 @@ export class ProjectEntity {
     this.updatedBy = props.updatedBy
     this.projectViews = props.projectViews || []
     this.members = props.members || []
+    this.tasks = props.tasks || []
+    this.comments = props.comments || []
+    this.tags = props.tags || []
+    this.fields = props.fields || []
+    this.grids = props.grids || []
+    this.projectSettingNotifications = props.projectSettingNotifications || []
   }
 
   static create(data: {

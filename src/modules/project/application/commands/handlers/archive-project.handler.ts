@@ -1,7 +1,8 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 
-import { IProjectRepository } from '../../../domain/repositories/project.repository'
+import { IProjectRepository } from '@/modules/project/domain/repositories/project.repository'
+
 import { ArchiveProjectCommand } from '../project.commands'
 
 @Injectable()

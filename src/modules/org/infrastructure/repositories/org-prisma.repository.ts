@@ -118,4 +118,44 @@ export class OrgPrismaRepository
   async existsBySlug(slug: string): Promise<boolean> {
     return this.exists({ slug })
   }
+
+  // Load organization với tất cả relationships
+  async findByIdWithRelations(id: string): Promise<OrgEntity | null> {
+    const org = await this.prismaService.organization.findUnique({
+      where: { id },
+      include: {
+        organizationMembers: {
+          include: {
+            user: true,
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+        projects: {
+          where: { isDeleted: false },
+          orderBy: { updatedAt: 'desc' },
+        },
+        favorites: {
+          orderBy: { createdAt: 'desc' },
+        },
+        applications: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    })
+
+    if (!org) return null
+    return this.toDomain(org as PrismaOrgWithMembers)
+  }
+
+  async findByUser(userId: string, options?: OrgFindQueryOptions): Promise<OrgEntity[]> {
+    return this.findMany({
+      where: {
+        organizationMembers: {
+          some: { userId },
+        },
+      },
+      orderBy: { updatedAt: 'desc' },
+      ...options,
+    })
+  }
 }

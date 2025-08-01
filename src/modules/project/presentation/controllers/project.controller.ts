@@ -52,6 +52,7 @@ export class ProjectController {
   ): Promise<any> {
     const { userId } = req.user as IJwtPayload
     const { name, organizationId, projectViews, members, desc, cover, icon } = createProjectDto
+
     const command = new CreateProjectCommand({
       name,
       organizationId,

@@ -5,6 +5,11 @@ import { IOrgRepository } from '@/modules/org/domain/repositories/org.repository
 import { MemberEntity } from '@/modules/project/domain/entities/member.entity'
 import { MemberRole } from '@/modules/project/domain/enums/member.enum'
 import { IMemberRepository } from '@/modules/project/domain/repositories/member.repository'
+import { TaskPointEntity } from '@/modules/task/domain/entities/task-point.entity'
+import { TaskStatusEntity } from '@/modules/task/domain/entities/task-status.entity'
+import { StatusType } from '@/modules/task/domain/enums/status-type.enum'
+import { TaskPointPrismaRepository } from '@/modules/task/infrastructure/repositories/task-point-prisma.repository'
+import { TaskStatusPrismaRepository } from '@/modules/task/infrastructure/repositories/task-status-prisma.repository'
 
 import { ProjectViewEntity } from '../../../domain/entities/project-view.entity'
 import { ProjectEntity } from '../../../domain/entities/project.entity'
@@ -12,7 +17,6 @@ import { ProjectViewType } from '../../../domain/enums/project-view-type.enum'
 import { IProjectViewRepository } from '../../../domain/repositories/project-view.repository'
 import { IProjectRepository } from '../../../domain/repositories/project.repository'
 import { CreateProjectCommand } from '../project.commands'
-
 @Injectable()
 @CommandHandler(CreateProjectCommand)
 export class CreateProjectCommandHandler implements ICommandHandler<CreateProjectCommand> {
@@ -28,6 +32,10 @@ export class CreateProjectCommandHandler implements ICommandHandler<CreateProjec
 
     @Inject('MEMBER_REPOSITORY')
     private readonly memberRepository: IMemberRepository,
+
+    private readonly taskPointRepository: TaskPointPrismaRepository,
+
+    private readonly taskStatusRepository: TaskStatusPrismaRepository,
   ) {}
 
   async execute(command: CreateProjectCommand): Promise<ProjectEntity> {
@@ -47,31 +55,54 @@ export class CreateProjectCommandHandler implements ICommandHandler<CreateProjec
       icon,
     })
     const createdProject = await this.projectRepository.create(projectData)
+    const projectId = createdProject.id!
     const memberEntities =
       members?.map(
         memberId =>
           new MemberEntity({
             userId: memberId,
-            projectId: createdProject.id!,
+            projectId,
             role: createdBy == memberId ? MemberRole.LEADER : MemberRole.MEMBER,
             createdBy,
           }),
       ) || []
+
+    // Create task stauses for the project
+    const initTaskStatuses = [
+      { name: 'To Do', color: '#FFCC00', order: 0, projectId, type: StatusType.TODO },
+      { name: 'In Progress', color: '#00CCFF', order: 1, projectId, type: StatusType.INPROCESS },
+      { name: 'Done', color: '#00FF00', order: 2, projectId, type: StatusType.DONE },
+      // { name: 'Blocked', color: '#FF0000', order: 3, projectId },
+    ]
+    const taskStatuses = initTaskStatuses.map(data => TaskStatusEntity.create(data))
+    await this.taskStatusRepository.createMany(taskStatuses)
+
+    // Create task points for the project
+    const initTaskPoints = [
+      { point: 1, projectId },
+      { point: 2, projectId },
+      { point: 3, projectId },
+      { point: 5, projectId },
+      { point: 8, projectId },
+    ]
+    const taskPoints = initTaskPoints.map(data => TaskPointEntity.create(data))
+    await this.taskPointRepository.createMany(taskPoints)
+
     // Add members to the project
     if (memberEntities.length > 0) {
       await this.memberRepository.createMany(memberEntities)
     }
     if (projectViews && projectViews.length > 0) {
       const viewsToCreate = this.createProjectViewsFromTypes({
-        projectId: createdProject.id!,
+        projectId,
         createdBy,
         viewTypes: projectViews,
         members,
       })
-      console.log('Creating project views:', viewsToCreate)
-      for (const viewData of viewsToCreate) {
-        await this.projectViewRepository.create(viewData)
-      }
+      await this.projectViewRepository.createMany(viewsToCreate)
+      // for (const viewData of viewsToCreate) {
+      //   await this.projectViewRepository.create(viewData)
+      // }
     }
 
     return createdProject

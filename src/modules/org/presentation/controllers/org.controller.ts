@@ -115,7 +115,7 @@ export class OrgController {
     const org = await this.commandBus.execute(createOrgCommand)
     return this.responseBuilder.created(org, 'Organization created successfully')
   }
-
+  
   @Put(':organizationId')
   @UseGuards(OrganizationRoleGuard)
   @OrgRoles(OrgRole.ADMIN) // Only organization admins can update organization settings
