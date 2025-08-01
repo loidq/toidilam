@@ -26,6 +26,13 @@ export class TaskIdDto {
   @IsUUID(7)
   taskId: string
 }
+
+export class CommentIdDto {
+  @IsNotEmpty()
+  @IsUUID(7)
+  commentId: string
+}
+
 export class OrganizationIdDto {
   @IsNotEmpty()
   @IsUUID(7)
@@ -43,4 +50,30 @@ export class MemberIdDto {
   @IsUUID(7)
   @ApiProperty()
   memberId: string
+}
+
+export class TaskAutomationIdDto {
+  @IsNotEmpty()
+  @IsUUID(7)
+  taskAutomationId: string
+}
+
+export class DashboardIdDto {
+  @IsNotEmpty()
+  @IsUUID(7)
+  @ApiProperty()
+  dashboardId: string
+}
+
+export class DashboardComponentIdDto {
+  @IsNotEmpty()
+  @IsUUID(7)
+  @ApiProperty()
+  dashboardComponentId: string
+}
+
+export class FavoriteIdDto {
+  @IsNotEmpty()
+  @IsUUID(7)
+  favoriteId: string
 }
