@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common'
 import { OrgMemberPrismaRepository } from '@/modules/org/infrastructure/repositories/org-member-prisma.repository'
 import { OrgPrismaRepository } from '@/modules/org/infrastructure/repositories/org-prisma.repository'
 
+import { TaskRepositoryModule } from '../task/task-repository.module'
 import {
   // Member handlers
   AddMemberCommandHandler,
@@ -60,7 +61,7 @@ const QUERY_HANDLERS = [
 ]
 
 @Module({
-  imports: [],
+  imports: [TaskRepositoryModule],
   controllers: [ProjectController, MemberController],
   providers: [
     ...COMMAND_HANDLERS,

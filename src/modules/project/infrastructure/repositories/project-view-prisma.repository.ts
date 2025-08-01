@@ -68,6 +68,21 @@ export class ProjectViewPrismaRepository
     }
   }
 
+  protected toPrismaCreateManyInput(
+    projectView: ProjectViewEntity,
+  ): Prisma.ProjectViewCreateManyInput {
+    return {
+      name: projectView.name,
+      type: projectView.type,
+      onlyMe: projectView.onlyMe,
+      icon: projectView.icon,
+      projectId: projectView.projectId,
+      order: projectView.order,
+      data: projectView.data,
+      createdBy: projectView.createdBy,
+    }
+  }
+
   // Implement IProjectViewRepository methods
   async findById(
     id: string,

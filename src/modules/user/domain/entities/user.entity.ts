@@ -1,4 +1,10 @@
+import { ActivityEntity } from '../../../activity/domain/entities/activity.entity'
+import { OrgMemberEntity } from '../../../org/domain/entities/org-member.entity'
+import { MemberEntity } from '../../../project/domain/entities/member.entity'
+import { TaskAssigneeEntity } from '../../../task/domain/entities/task-assignee.entity'
+import { TimerEntity } from '../../../task/domain/entities/timer.entity'
 import { UserStatus } from '../enums/user.enum'
+import { FavoriteEntity } from './favorite.entity'
 
 export class UserEntity {
   public readonly id?: string
@@ -17,6 +23,15 @@ export class UserEntity {
   public updatedBy?: string
   public deletedAt?: Date
   public isDeleted: boolean = false
+
+  // Relations
+  public taskAssignees: TaskAssigneeEntity[]
+  public timers: TimerEntity[]
+  public orgMemberships: OrgMemberEntity[]
+  public projectMemberships: MemberEntity[]
+  public favorites: FavoriteEntity[]
+  public activities: ActivityEntity[]
+
   constructor(props: {
     id?: string
     email: string
@@ -34,8 +49,35 @@ export class UserEntity {
     updatedBy?: string
     deletedAt?: Date
     isDeleted?: boolean
+    taskAssignees?: TaskAssigneeEntity[]
+    timers?: TimerEntity[]
+    orgMemberships?: OrgMemberEntity[]
+    projectMemberships?: MemberEntity[]
+    favorites?: FavoriteEntity[]
+    activities?: ActivityEntity[]
   }) {
-    Object.assign(this, props)
+    this.id = props.id
+    this.email = props.email
+    this.password = props.password
+    this.name = props.name
+    this.status = props.status || UserStatus.ACTIVE
+    this.country = props.country
+    this.bio = props.bio
+    this.photo = props.photo
+    this.dob = props.dob
+    this.settings = props.settings || {}
+    this.createdAt = props.createdAt
+    this.updatedAt = props.updatedAt
+    this.createdBy = props.createdBy
+    this.updatedBy = props.updatedBy
+    this.deletedAt = props.deletedAt
+    this.isDeleted = props.isDeleted || false
+    this.taskAssignees = props.taskAssignees || []
+    this.timers = props.timers || []
+    this.orgMemberships = props.orgMemberships || []
+    this.projectMemberships = props.projectMemberships || []
+    this.favorites = props.favorites || []
+    this.activities = props.activities || []
   }
 
   static create(data: {

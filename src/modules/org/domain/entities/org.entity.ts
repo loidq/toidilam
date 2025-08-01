@@ -1,4 +1,7 @@
+import { ProjectEntity } from '@/modules/project/domain/entities/project.entity'
+
 import { OrgMemberEntity } from './org-member.entity'
+import { OrganizationStorageEntity } from './organization-storage.entity'
 
 export enum OrgRole {
   ADMIN = 'ADMIN',
@@ -20,7 +23,10 @@ export class OrgEntity {
   public maxStorageSize?: number
   public updatedBy?: string
 
+  // Relations
   public organizationMembers: OrgMemberEntity[]
+  public projects: ProjectEntity[]
+  public organizationStorages: OrganizationStorageEntity[]
 
   public constructor(props: {
     id?: string
@@ -35,8 +41,23 @@ export class OrgEntity {
     createdAt?: Date
     updatedAt?: Date
     organizationMembers?: OrgMemberEntity[]
+    projects?: ProjectEntity[]
+    organizationStorages?: OrganizationStorageEntity[]
   }) {
-    Object.assign(this, props)
+    this.id = props.id
+    this.name = props.name
+    this.slug = props.slug
+    this.createdBy = props.createdBy
+    this.desc = props.desc
+    this.cover = props.cover
+    this.avatar = props.avatar
+    this.maxStorageSize = props.maxStorageSize
+    this.updatedBy = props.updatedBy
+    this.createdAt = props.createdAt
+    this.updatedAt = props.updatedAt
+    this.organizationMembers = props.organizationMembers || []
+    this.projects = props.projects || []
+    this.organizationStorages = props.organizationStorages || []
   }
 
   static create(data: {

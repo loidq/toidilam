@@ -11,6 +11,7 @@ import {
   UserWhereUniqueInput,
 } from '@/infrastructure/prisma/types/user-query-options.types'
 
+import { FavoriteEntity } from '../../domain/entities/favorite.entity'
 import { UserEntity } from '../../domain/entities/user.entity'
 import { IUserRepository } from '../../domain/repositories/user.repository'
 
@@ -124,5 +125,41 @@ export class UserPrismaRepository
     ])
 
     return { users, total }
+  }
+
+  // Load user với favorites và timers
+  async findByIdWithRelations(id: string): Promise<UserEntity | null> {
+    const user = await this.prismaService.user.findUnique({
+      where: { id },
+      include: {
+        favorites: true,
+      },
+    })
+
+    if (!user) return null
+
+    const userEntity = this.toDomain(user)
+
+    // Map favorites
+    if (user.favorites) {
+      userEntity.favorites = user.favorites.map(
+        fav =>
+          new FavoriteEntity({
+            id: fav.id,
+            name: fav.name,
+            icon: fav.icon,
+            link: fav.link,
+            userId: fav.userId,
+            organizationId: fav.organizationId,
+            type: fav.type,
+            createdAt: fav.createdAt,
+            createdBy: fav.createdBy,
+            updatedAt: fav.updatedAt,
+            updatedBy: fav.updatedBy || undefined,
+          }),
+      )
+    }
+
+    return userEntity
   }
 }

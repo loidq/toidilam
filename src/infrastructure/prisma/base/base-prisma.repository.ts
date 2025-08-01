@@ -67,6 +67,15 @@ export abstract class BasePrismaRepository<
 
     return result ? this.toDomain(result) : null
   }
+  async findUniqueRaw(
+    where: TWhereUniqueInput,
+    options?: BaseQueryOptions<TSelect, TInclude, TOrderBy, TOmit>,
+  ): Promise<any | null> {
+    return await this.model.findUnique({
+      where,
+      ...this.buildQueryOptions(options),
+    })
+  }
 
   async findFirst(
     options?: FindQueryOptions<TWhereInput, TSelect, TInclude, TOrderBy, TOmit>,
@@ -79,6 +88,15 @@ export abstract class BasePrismaRepository<
     return result ? this.toDomain(result) : null
   }
 
+  async findFirstRaw(
+    options?: FindQueryOptions<TWhereInput, TSelect, TInclude, TOrderBy, TOmit>,
+  ): Promise<any | null> {
+    return await this.model.findFirst({
+      ...this.buildQueryOptions(options),
+      where: options?.where,
+    })
+  }
+
   async findMany(
     options?: FindQueryOptions<TWhereInput, TSelect, TInclude, TOrderBy, TOmit>,
   ): Promise<TEntity[]> {
@@ -88,11 +106,27 @@ export abstract class BasePrismaRepository<
     })
     return results.map((result: any) => this.toDomain(result))
   }
+  async findManyRaw(
+    options?: FindQueryOptions<TWhereInput, TSelect, TInclude, TOrderBy, TOmit>,
+  ): Promise<any[]> {
+    return await this.model.findMany({
+      ...this.buildQueryOptions(options),
+      where: options?.where,
+    })
+  }
 
   async create(data: TEntity): Promise<TEntity> {
     const prismaData = this.toPrismaCreate(data)
     const result = await this.model.create({ data: deepCleanObject(prismaData) })
     return this.toDomain(result)
+  }
+
+  async createRaw(data: TEntity): Promise<any> {
+    const prismaData = this.toPrismaCreate(data)
+    const result = await this.model.create({
+      data: deepCleanObject(prismaData),
+    })
+    return result
   }
 
   async createMany(datas: TEntity[]): Promise<TEntity[]> {
@@ -106,6 +140,22 @@ export abstract class BasePrismaRepository<
     const prismaData = this.toPrismaUpdate(data)
     const result = await this.model.update({ where, data: deepCleanObject(prismaData) })
     return this.toDomain(result)
+  }
+  async updateRaw(where: TWhereUniqueInput, data: Partial<TEntity>): Promise<any> {
+    const prismaData = this.toPrismaUpdate(data)
+    const result = await this.model.update({
+      where,
+      data: deepCleanObject(prismaData),
+    })
+    return result
+  }
+  async updateMany(where: TWhereInput, data: Partial<TEntity>): Promise<{ count: number }> {
+    const prismaData = this.toPrismaUpdate(data)
+    const result = await this.model.updateMany({
+      where,
+      data: deepCleanObject(prismaData),
+    })
+    return result
   }
 
   async delete(where: TWhereUniqueInput): Promise<boolean> {

@@ -182,4 +182,85 @@ export class ProjectPrismaRepository
       ...options,
     })
   }
+
+  // Load project với tất cả relationships
+  async findByIdWithRelations(id: string): Promise<ProjectEntity | null> {
+    const project = await this.prismaService.project.findUnique({
+      where: { id },
+      include: {
+        projectViews: {
+          orderBy: { createdAt: 'asc' },
+        },
+        members: {
+          include: {
+            user: true,
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+        tasks: {
+          include: {
+            taskStatus: true,
+            taskAssignees: true,
+          },
+          orderBy: { order: 'asc' },
+        },
+        tags: {
+          orderBy: { name: 'asc' },
+        },
+        grid: {
+          orderBy: { createdAt: 'asc' },
+        },
+        field: {
+          orderBy: { order: 'asc' },
+        },
+        dashboard: {
+          include: {
+            dashboardComponents: true,
+          },
+        },
+        vision: true,
+        comments: {
+          orderBy: { createdAt: 'desc' },
+        },
+        fileStorages: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    })
+
+    if (!project) return null
+
+    // Basic mapping - chỉ map projectViews và members như hiện tại
+    return this.toDomain(
+      project as PrismaProject & {
+        projectViews: PrismaProjectView[]
+        members: PrismaMember[]
+      },
+    )
+  }
+
+  async findByOrganization(
+    organizationId: string,
+    options?: ProjectFindQueryOptions,
+  ): Promise<ProjectEntity[]> {
+    return this.findMany({
+      where: { organizationId },
+      orderBy: { createdAt: 'desc' },
+      ...options,
+    })
+  }
+
+  async findActiveProjects(
+    organizationId: string,
+    options?: ProjectFindQueryOptions,
+  ): Promise<ProjectEntity[]> {
+    return this.findMany({
+      where: {
+        organizationId,
+        isDeleted: false,
+      },
+      orderBy: { updatedAt: 'desc' },
+      ...options,
+    })
+  }
 }

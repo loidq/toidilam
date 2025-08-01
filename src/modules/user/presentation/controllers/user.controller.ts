@@ -8,7 +8,6 @@ import { JwtAuthGuard } from '@/modules/auth/domain/guards/jwt-auth.guard'
 import { ResponseBuilderService } from '@/shared/common/services/response-builder.service'
 
 import { GetUserByIdQuery } from '../../application/queries'
-
 @Controller('user')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)

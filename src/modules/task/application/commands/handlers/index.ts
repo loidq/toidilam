@@ -1,0 +1,6 @@
+export * from './create-comment.handler'
+export * from './create-task.handler'
+export * from './delete-comment.handler'
+export * from './delete-task.handler'
+export * from './update-comment.handler'
+export * from './update-task.handler'
