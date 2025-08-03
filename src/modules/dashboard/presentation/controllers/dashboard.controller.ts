@@ -27,10 +27,18 @@ import {
 import {
   CreateDashboardDto,
   DashboardListQueryDto,
+  DashboardQueryBurnChartDto,
+  DashboardQueryColumnDto,
   DashboardQuerySummaryDto,
   UpdateDashboardDto,
 } from '../../application/dtos'
-import { GetDashboardByIdQuery, GetDashboardsQuery } from '../../application/queries'
+import {
+  GetDashboardBurnChartQuery,
+  GetDashboardByIdQuery,
+  GetDashboardColumnQuery,
+  GetDashboardsQuery,
+  GetDashboardSummaryQuery,
+} from '../../application/queries'
 
 @ApiTags('Dashboard')
 @ApiBearerAuth()
@@ -83,13 +91,79 @@ export class DashboardController {
     return this.responseBuilder.success(dashboard, 'Dashboard retrieved successfully')
   }
 
-  @Get('query-summary')
+  @Post('query-summary')
   async getDashboardSummary(
-    @Query()
+    @Body()
     { projectIds, statusIds, startDate, endDate, priority, assigneeIds }: DashboardQuerySummaryDto,
   ): Promise<any> {
     //TODO: Implement the logic to summarize dashboards based on the provided query parameters
-    return this.responseBuilder.success(null, 'Dashboard summary retrieved successfully')
+    const query = new GetDashboardSummaryQuery({
+      projectIds,
+      statusIds,
+      startDate,
+      endDate,
+      priority,
+      assigneeIds,
+    })
+
+    const summary = await this.queryBus.execute(query)
+
+    return this.responseBuilder.success(summary, 'Dashboard summary retrieved successfully')
+  }
+
+  @Post('query-column')
+  async getDashboardColumn(
+    @Body() { startDate, endDate, projectIds, xAxis, series }: DashboardQueryColumnDto,
+  ): Promise<any> {
+    const query = new GetDashboardColumnQuery({
+      startDate,
+      endDate,
+      projectIds,
+      xAxis,
+      series,
+    })
+    const columnData = await this.queryBus.execute(query)
+    return this.responseBuilder.success(columnData, 'Dashboard column data retrieved successfully')
+  }
+
+  @Post('query-burnchart/:type')
+  async getDashboardBurnChart(
+    @Param('type') type: string,
+    @Body()
+    {
+      startDate,
+      endDate,
+      projectIds,
+      statusIds,
+      tagIds,
+      assigneeIds,
+      icon,
+      title,
+      points,
+      priority,
+      dateQuery,
+    }: DashboardQueryBurnChartDto,
+  ): Promise<any> {
+    const query = new GetDashboardBurnChartQuery({
+      startDate,
+      endDate,
+      projectIds,
+      statusIds,
+      tagIds,
+      assigneeIds,
+      icon,
+      title,
+      points,
+      priority,
+      dateQuery,
+    })
+
+    const burnChartData = await this.queryBus.execute(query)
+
+    return this.responseBuilder.success(
+      burnChartData,
+      'Dashboard burn chart data retrieved successfully',
+    )
   }
 
   @Put(':dashboardId')

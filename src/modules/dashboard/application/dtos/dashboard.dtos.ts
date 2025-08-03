@@ -1,7 +1,19 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator'
+import { Type } from 'class-transformer'
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from 'class-validator'
 
 import { PaginationDto } from '@/shared/common/dtos/pagination.dto'
+
 export class CreateDashboardDto {
   @ApiPropertyOptional({
     description: 'Dashboard title',
@@ -92,4 +104,118 @@ export class DashboardQuerySummaryDto extends PaginationDto {
   @IsArray()
   @IsString({ each: true })
   priority?: string[]
+}
+
+class XAxisDto {
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  assigneeIds?: string[]
+}
+
+class SeriesDto {
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  statusIds?: string[]
+}
+
+export class DashboardQueryColumnDto extends PaginationDto {
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  startDate?: Date
+
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  endDate?: Date
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  projectIds?: string[]
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => XAxisDto)
+  xAxis?: XAxisDto
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SeriesDto)
+  series?: SeriesDto
+}
+
+/*
+type DateOperation = '>' | '>=' | '=' | '<' | '<='
+type DateString = 'today' | 'week' | 'month'
+type DateWithOperation = [DateOperation, DateString]
+
+title?: string
+  icon?: string
+  projectIds?: string[]
+  statusIds?: string[]
+  tagIds?: string[]
+  assigneeIds?: string[]
+  points?: number[]
+  priority?: string[]
+  startDate?: Date
+  endDate?: Date
+  dateQuery?: DateWithOperation
+*/
+
+export type DateOperation = '>' | '>=' | '=' | '<' | '<='
+export type DateString = 'today' | 'week' | 'month'
+export type DateWithOperation = [DateOperation, DateString]
+
+export class DashboardQueryBurnChartDto extends PaginationDto {
+  @IsOptional()
+  @IsString()
+  title?: string
+
+  @IsOptional()
+  @IsString()
+  icon?: string
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID(7, { each: true })
+  projectIds?: string[]
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID(7, { each: true })
+  statusIds?: string[]
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID(7, { each: true })
+  assigneeIds?: string[]
+
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  points?: number[]
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID(7, { each: true })
+  tagIds?: string[]
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  priority?: string[]
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  startDate?: Date
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  endDate?: Date
+
+  @IsOptional()
+  dateQuery?: DateWithOperation
 }

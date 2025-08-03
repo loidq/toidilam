@@ -8,7 +8,7 @@ import { GetDashboardSummaryQuery } from '../dashboard.queries'
 export class GetDashboardSummaryHandler implements IQueryHandler<GetDashboardSummaryQuery> {
   constructor(private readonly dashboardRepository: DashboardPrismaRepository) {}
 
-  async execute(query: GetDashboardSummaryQuery): Promise<any> {
+  async execute(query: GetDashboardSummaryQuery): Promise<number> {
     const { projectIds, statusIds, startDate, endDate, priority, assigneeIds } = query
 
     const where = this.generateQueryCondition({
@@ -82,8 +82,10 @@ export class GetDashboardSummaryHandler implements IQueryHandler<GetDashboardSum
     }
 
     if (assigneeIds && assigneeIds.length) {
-      where.assigneeIds = {
-        hasSome: assigneeIds,
+      where.taskAssignees = {
+        some: {
+          userId: { in: assigneeIds },
+        },
       }
     }
 
