@@ -35,10 +35,10 @@ export class GetDashboardComponentsQuery {
 }
 
 export class GetDashboardSummaryQuery {
-  public readonly projectIds?: string[]
-  public readonly statusIds?: string[]
   public readonly startDate?: Date
   public readonly endDate?: Date
+  public readonly projectIds?: string[]
+  public readonly statusIds?: string[]
   public readonly priority?: string[]
   public readonly assigneeIds?: string[]
 
@@ -56,5 +56,77 @@ export class GetDashboardSummaryQuery {
     this.endDate = props.endDate
     this.priority = props.priority
     this.assigneeIds = props.assigneeIds
+  }
+}
+/*
+startDate?: Date
+  endDate?: Date
+  projectIds?: string[]
+  xAxis?: {
+    assigneeIds?: string[]
+  }
+  series?: {
+    statusIds?: string[]
+  }
+*/
+export class GetDashboardColumnQuery {
+  public readonly startDate?: Date
+  public readonly endDate?: Date
+  public readonly projectIds?: string[]
+  public readonly xAxis?: {
+    assigneeIds?: string[]
+  }
+  public readonly series?: {
+    statusIds?: string[]
+  }
+
+  constructor(props: {
+    startDate?: Date
+    endDate?: Date
+    projectIds?: string[]
+    xAxis?: {
+      assigneeIds?: string[]
+    }
+    series?: {
+      statusIds?: string[]
+    }
+  }) {
+    Object.assign(this, props)
+  }
+}
+
+export type DateOperation = '>' | '>=' | '=' | '<' | '<='
+export type DateString = 'today' | 'week' | 'month'
+export type DateWithOperation = [DateOperation, DateString]
+
+export class GetDashboardBurnChartQuery {
+  public readonly startDate?: Date
+  public readonly endDate?: Date
+  public readonly projectIds?: string[]
+  public readonly statusIds?: string[]
+  public readonly tagIds?: string[]
+  public readonly assigneeIds?: string[]
+  public readonly icon?: string
+  public readonly title?: string
+  public readonly points?: number[]
+  public readonly priority?: string[]
+  public readonly dateQuery?: DateWithOperation
+  public readonly type: string
+
+  constructor(props: {
+    startDate?: Date
+    endDate?: Date
+    projectIds?: string[]
+    statusIds?: string[]
+    tagIds?: string[]
+    assigneeIds?: string[]
+    icon?: string
+    title?: string
+    points?: number[]
+    priority?: string[]
+    dateQuery?: DateWithOperation
+    type?: string
+  }) {
+    Object.assign(this, props)
   }
 }
