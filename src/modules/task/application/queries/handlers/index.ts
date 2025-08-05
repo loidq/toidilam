@@ -1,5 +1,7 @@
 export * from './get-comment-by-id.handler'
 export * from './get-comments.handler'
+export * from './get-task-checklist-by-id.handler'
+export * from './get-task-checklists-by-task.handler'
 export * from './get-task-point-by-id.handler'
 export * from './get-task-points.handler'
 export * from './get-task-status-by-id.handler'

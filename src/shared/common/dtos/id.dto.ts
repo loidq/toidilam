@@ -39,6 +39,12 @@ export class TaskStatusIdDto {
   statusId: string
 }
 
+export class TaskChecklistIdDto {
+  @IsNotEmpty()
+  @IsUUID(7)
+  checklistId: string
+}
+
 export class CommentIdDto {
   @IsNotEmpty()
   @IsUUID(7)
@@ -88,4 +94,10 @@ export class FavoriteIdDto {
   @IsNotEmpty()
   @IsUUID(7)
   favoriteId: string
+}
+
+export class VisionIdDto {
+  @IsNotEmpty()
+  @IsUUID(7)
+  visionId: string
 }

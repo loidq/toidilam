@@ -13,6 +13,7 @@ import { OrgModule } from './modules/org/org.module'
 import { ProjectModule } from './modules/project/project.module'
 import { TaskModule } from './modules/task/task.module'
 import { UserModule } from './modules/user/user.module'
+import { VisionModule } from './modules/vision/vision.module'
 // import { AuthorizationModule } from './shared/authz/authorization.module'
 // import { CaslModule } from './shared/casl/casl.module'
 import { CommonModule } from './shared/common/common.module'
@@ -35,6 +36,7 @@ import { CommonModule } from './shared/common/common.module'
     TaskModule,
     DashboardModule,
     FavoriteModule,
+    VisionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

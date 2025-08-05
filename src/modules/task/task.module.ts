@@ -5,14 +5,17 @@ import { ActivityRepositoryModule } from '../activity/activity-repository.module
 import { ProjectModule } from '../project'
 import {
   CreateCommentCommandHandler,
+  CreateTaskChecklistCommandHandler,
   CreateTaskCommandHandler,
   CreateTaskPointCommandHandler,
   CreateTaskStatusCommandHandler,
   DeleteCommentCommandHandler,
+  DeleteTaskChecklistCommandHandler,
   DeleteTaskCommandHandler,
   DeleteTaskPointCommandHandler,
   DeleteTaskStatusCommandHandler,
   UpdateCommentCommandHandler,
+  UpdateTaskChecklistCommandHandler,
   UpdateTaskCommandHandler,
   UpdateTaskPointCommandHandler,
   UpdateTaskStatusCommandHandler,
@@ -23,6 +26,8 @@ import {
   GetCommentByIdQueryHandler,
   GetCommentsQueryHandler,
   GetTaskByIdQueryHandler,
+  GetTaskChecklistByIdQueryHandler,
+  GetTaskChecklistsByTaskQueryHandler,
   GetTaskPointByIdQueryHandler,
   GetTaskPointsQueryHandler,
   GetTaskStatusByIdQueryHandler,
@@ -30,7 +35,12 @@ import {
   GetTaskStatusesQueryHandler,
   GetTasksQueryHandler,
 } from './application/queries/handlers'
-import { TaskController, TaskPointController, TaskStatusController } from './presentation'
+import {
+  TaskChecklistController,
+  TaskController,
+  TaskPointController,
+  TaskStatusController,
+} from './presentation'
 import { CommentController } from './presentation/controllers/comment.controller'
 import { TaskRepositoryModule } from './task-repository.module'
 
@@ -41,6 +51,9 @@ const commandHandlers = [
   CreateCommentCommandHandler,
   UpdateCommentCommandHandler,
   DeleteCommentCommandHandler,
+  CreateTaskChecklistCommandHandler,
+  UpdateTaskChecklistCommandHandler,
+  DeleteTaskChecklistCommandHandler,
   CreateTaskPointCommandHandler,
   UpdateTaskPointCommandHandler,
   DeleteTaskPointCommandHandler,
@@ -54,6 +67,8 @@ const queryHandlers = [
   GetTasksQueryHandler,
   GetCommentsQueryHandler,
   GetCommentByIdQueryHandler,
+  GetTaskChecklistByIdQueryHandler,
+  GetTaskChecklistsByTaskQueryHandler,
   GetTaskPointsQueryHandler,
   GetTaskPointByIdQueryHandler,
   GetTaskStatusesQueryHandler,
@@ -63,7 +78,13 @@ const queryHandlers = [
 
 @Module({
   imports: [TaskRepositoryModule, ProjectModule, ActivityRepositoryModule],
-  controllers: [TaskController, CommentController, TaskPointController, TaskStatusController],
+  controllers: [
+    TaskController,
+    CommentController,
+    TaskChecklistController,
+    TaskPointController,
+    TaskStatusController,
+  ],
   providers: [...commandHandlers, ...queryHandlers],
   exports: [],
 })

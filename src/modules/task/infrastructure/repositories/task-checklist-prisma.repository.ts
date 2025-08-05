@@ -78,26 +78,4 @@ export class TaskChecklistPrismaRepository
       ...options,
     })
   }
-
-  async markAsDone(id: string): Promise<TaskChecklistEntity | null> {
-    const updated = await this.prismaService.taskChecklist.update({
-      where: { id },
-      data: {
-        done: true,
-        doneAt: new Date(),
-      },
-    })
-    return this.toDomain(updated as PrismaTaskChecklist)
-  }
-
-  async markAsUndone(id: string): Promise<TaskChecklistEntity | null> {
-    const updated = await this.prismaService.taskChecklist.update({
-      where: { id },
-      data: {
-        done: false,
-        doneAt: null,
-      },
-    })
-    return this.toDomain(updated as PrismaTaskChecklist)
-  }
 }

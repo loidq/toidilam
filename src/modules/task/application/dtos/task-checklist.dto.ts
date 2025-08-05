@@ -26,6 +26,12 @@ export class UpdateTaskChecklistDto {
   done?: boolean
 }
 
+export class TaskChecklistListQueryDto {
+  @IsOptional()
+  @IsString()
+  taskId?: string
+}
+
 export class TaskChecklistResponseDto {
   id: string
   title: string
