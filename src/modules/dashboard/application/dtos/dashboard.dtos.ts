@@ -218,4 +218,8 @@ export class DashboardQueryBurnChartDto extends PaginationDto {
 
   @IsOptional()
   dateQuery?: DateWithOperation
+
+  @IsNotEmpty()
+  @IsString()
+  type: string
 }

@@ -128,9 +128,9 @@ export class DashboardController {
 
   @Post('query-burnchart/:type')
   async getDashboardBurnChart(
-    @Param('type') type: string,
     @Body()
     {
+      type,
       startDate,
       endDate,
       projectIds,
