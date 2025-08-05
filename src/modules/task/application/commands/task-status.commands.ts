@@ -48,3 +48,12 @@ export class DeleteTaskStatusCommand {
     Object.assign(this, props)
   }
 }
+
+export class UpdateTaskStatusOrderCommand {
+  public readonly statusOrders: { id: string; order: number }[]
+  public readonly updatedBy: string
+
+  constructor(props: { statusOrders: { id: string; order: number }[]; updatedBy: string }) {
+    Object.assign(this, props)
+  }
+}

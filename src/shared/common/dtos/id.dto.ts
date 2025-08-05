@@ -27,6 +27,18 @@ export class TaskIdDto {
   taskId: string
 }
 
+export class TaskPointIdDto {
+  @IsNotEmpty()
+  @IsUUID(7)
+  taskPointId: string
+}
+
+export class TaskStatusIdDto {
+  @IsNotEmpty()
+  @IsUUID(7)
+  statusId: string
+}
+
 export class CommentIdDto {
   @IsNotEmpty()
   @IsUUID(7)
