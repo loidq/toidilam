@@ -5,12 +5,14 @@ import { CqrsModule } from '@nestjs/cqrs'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { PrismaModule } from './infrastructure/prisma/prisma.module'
+import { RedisModule } from './infrastructure/redis/redis.module'
 import { ActivityModule } from './modules/activity'
 import { AuthModule } from './modules/auth/auth.module'
 import { DashboardModule } from './modules/dashboard'
 import { FavoriteModule } from './modules/favorite'
 import { OrgModule } from './modules/org/org.module'
 import { ProjectModule } from './modules/project/project.module'
+import { ReportModule } from './modules/report'
 import { TaskModule } from './modules/task/task.module'
 import { UserModule } from './modules/user/user.module'
 import { VisionModule } from './modules/vision/vision.module'
@@ -25,6 +27,7 @@ import { CommonModule } from './shared/common/common.module'
     }),
     CqrsModule.forRoot(),
     PrismaModule,
+    RedisModule,
     CommonModule,
     // AuthorizationModule,
     // CaslModule, // Use our new CASL module
@@ -34,6 +37,7 @@ import { CommonModule } from './shared/common/common.module'
     ProjectModule,
     ActivityModule,
     TaskModule,
+    ReportModule,
     DashboardModule,
     FavoriteModule,
     VisionModule,
