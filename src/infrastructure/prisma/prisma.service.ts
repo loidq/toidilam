@@ -6,8 +6,15 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   constructor() {
     //'query', 'info', 'warn',
     super({
+      // log: [{ level: 'query', emit: 'event' }],
       log: ['warn', 'error'],
     })
+    // ;(this as any).$on('query', (e: Prisma.QueryEvent) => {
+    //   console.log('[Prisma QUERY]')
+    //   console.log('Query:', e.query)
+    //   console.log('Params:', e.params)
+    //   console.log('Duration:', e.duration + 'ms')
+    // })
   }
 
   async onModuleInit(): Promise<void> {

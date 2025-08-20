@@ -1,0 +1,35 @@
+services:
+  app:
+    container_name: backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - ENV_FILE=.env.local
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/toidilam?schema=public
+      - REDIS_URL=redis://redis:6379
+
+    healthcheck:
+      test: curl --fail http://localhost:3000 || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      - postgres
+      - redis
+    # restart: unless-stopped
+    networks:
+      - toidilam-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  toidilam-network:
+    driver: bridge

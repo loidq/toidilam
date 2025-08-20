@@ -1,3 +1,3 @@
-export * from './login.handler'
 export * from './refresh-token.handler'
-export * from './register.handler'
+export * from './sign-in.handler'
+export * from './sign-up.handler'

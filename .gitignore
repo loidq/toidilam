@@ -60,11 +60,10 @@ generated/
 prisma/migrations/
 scripts/
 
-# test files
-src/infrastructure/prisma/base
-src/infrastructure/prisma/types
-src/modules/user/domain/repositories/test.user.repository.ts
-src/modules/user/infrastructure/repositories/test.ts
-# test files
 
 src/infrastructure/prisma/migrations
+
+docs/Git-Convention.md
+/docs
+
+/test

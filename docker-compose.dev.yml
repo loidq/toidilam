@@ -1,0 +1,42 @@
+services:
+  app:
+    container_name: toidilam-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - ENV_FILE=.env.local
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/toidilam?schema=public
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./src:/app/src
+      - ./package.json:/app/package.json
+      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
+      - ./infrastructure/prisma/schema.prisma:/app/infrastructure/prisma/schema.prisma
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.build.json:/app/tsconfig.build.json
+      - ./nest-cli.json:/app/nest-cli.json
+      - ./eslint.config.mjs:/app/eslint.config.mjs
+    healthcheck:
+      test: curl --fail http://localhost:3000 || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - toidilam-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  toidilam-network:
+    driver: bridge

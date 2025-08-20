@@ -1,0 +1,4 @@
+export enum StatType {
+  PROJECT_TASK_BY_DAY = 'PROJECT_TASK_BY_DAY',
+  MEMBER_TASK_BY_DAY = 'MEMBER_TASK_BY_DAY',
+}

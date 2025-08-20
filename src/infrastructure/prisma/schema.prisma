@@ -176,6 +176,7 @@ model User {
   createdBy                   String?                      @db.Uuid
   updatedAt                   DateTime                     @updatedAt
   updatedBy                   String?                      @db.Uuid
+  Comment                     Comment[]
 }
 
 model Organization {
@@ -209,8 +210,11 @@ model OrganizationMember {
   userId         String           @db.Uuid
   status         InvitationStatus
   role           OrganizationRole
+  isRemoved      Boolean          @default(false)
+  removedAt      DateTime?
+  removedBy      String?          @db.Uuid
   createdAt      DateTime         @default(now())
-  createdBy      String?          @db.Uuid
+  createdBy      String           @db.Uuid
   updatedAt      DateTime         @updatedAt
   updatedBy      String?          @db.Uuid
   organization   Organization     @relation(fields: [organizationId], references: [id])
@@ -235,8 +239,11 @@ model Member {
   role      MemberRole
   userId    String     @db.Uuid
   projectId String     @db.Uuid
+  isRemoved Boolean    @default(false)
+  removedAt DateTime?
+  removedBy String?    @db.Uuid
   createdAt DateTime   @default(now())
-  createdBy String?    @db.Uuid
+  createdBy String     @db.Uuid
   updatedAt DateTime   @updatedAt
   updatedBy String?    @db.Uuid
   project   Project    @relation(fields: [projectId], references: [id])
@@ -246,7 +253,7 @@ model Member {
 model Project {
   id                          String                       @id @default(uuid(7)) @db.Uuid
   name                        String
-  projectView                 ProjectView?
+  projectViews                ProjectView[]
   field                       Field[]
   vision                      Vision[]
   projectSettingNotifications ProjectSettingNotification[]
@@ -267,11 +274,13 @@ model Project {
   cover                       String?
   icon                        String?
   isArchived                  Boolean                      @default(false)
+  isDeleted                   Boolean                      @default(false)
+  deletedAt                   DateTime?
   // these count settings is used for counting the number of tasks by days
   countMemberTask             Boolean                      @default(false)
   countProjectTask            Boolean                      @default(true)
   createdAt                   DateTime                     @default(now())
-  createdBy                   String?                      @db.Uuid
+  createdBy                   String                       @db.Uuid
   updatedAt                   DateTime                     @updatedAt
   updatedBy                   String?                      @db.Uuid
   organization                Organization                 @relation(fields: [organizationId], references: [id])
@@ -283,14 +292,14 @@ model ProjectView {
   type      ProjectViewType
   onlyMe    Boolean         @default(false)
   icon      String?
-  projectId String?         @unique @db.Uuid
+  projectId String          @db.Uuid
   order     Int?
-  data      Json?           @default("{}")
+  data      Json            @default("{}")
   createdAt DateTime        @default(now())
-  createdBy String?         @db.Uuid
+  createdBy String          @db.Uuid
   updatedAt DateTime        @updatedAt
   updatedBy String?         @db.Uuid
-  project   Project?        @relation(fields: [projectId], references: [id])
+  project   Project         @relation(fields: [projectId], references: [id])
 }
 
 model ProjectSettingNotification {
@@ -301,7 +310,7 @@ model ProjectSettingNotification {
   remind      Boolean  @default(false)
   overdue     Boolean  @default(false)
   createdAt   DateTime @default(now())
-  createdBy   String?  @db.Uuid
+  createdBy   String   @db.Uuid
   user        User     @relation(fields: [userId], references: [id])
   project     Project  @relation(fields: [projectId], references: [id])
 }
@@ -337,7 +346,7 @@ model Task {
   taskPoint        Int?
   customFields     Json?           @default("{}")
   createdAt        DateTime        @default(now())
-  createdBy        String?         @db.Uuid
+  createdBy        String          @db.Uuid
   updatedAt        DateTime        @updatedAt
   updatedBy        String?         @db.Uuid
   project          Project         @relation(fields: [projectId], references: [id])
@@ -361,7 +370,7 @@ model TaskAssignee {
   taskId     String   @db.Uuid
   userId     String   @db.Uuid
   assignedAt DateTime @default(now())
-  task       Task     @relation(fields: [taskId], references: [id])
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id])
 
   @@id([taskId, userId])
@@ -372,9 +381,9 @@ model TaskChecklist {
   title  String
   order  Int
   taskId String    @db.Uuid
-  task   Task      @relation(fields: [taskId], references: [id])
-  done   Boolean?  @default(false)
+  done   Boolean   @default(false)
   doneAt DateTime?
+  task   Task      @relation(fields: [taskId], references: [id])
 }
 
 model TaskPoint {
@@ -392,7 +401,7 @@ model TaskAutomation {
   when           Json
   then           Json
   createdAt      DateTime     @default(now())
-  createdBy      String?      @db.Uuid
+  createdBy      String       @db.Uuid
   updatedAt      DateTime     @updatedAt
   updatedBy      String?      @db.Uuid
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -409,7 +418,7 @@ model Vision {
   organizationId String?       @db.Uuid
   parentId       String?       @db.Uuid
   createdAt      DateTime      @default(now())
-  createdBy      String?
+  createdBy      String
   updatedAt      DateTime      @updatedAt
   updatedBy      String?
   project        Project?      @relation(fields: [projectId], references: [id])
@@ -441,9 +450,9 @@ model Grid {
   cover        String?
   projectId    String   @db.Uuid
   customFields Json?    @default("{}")
-  isDeleted    Boolean? @default(false)
+  isDeleted    Boolean  @default(false)
   createdAt    DateTime @default(now())
-  createdBy    String?  @db.Uuid
+  createdBy    String   @db.Uuid
   updatedAt    DateTime @updatedAt
   updatedBy    String?  @db.Uuid
   project      Project  @relation(fields: [projectId], references: [id])
@@ -475,7 +484,7 @@ model Scheduler {
   trigger        Json
   action         Json
   createdAt      DateTime     @default(now())
-  createdBy      String?      @db.Uuid
+  createdBy      String       @db.Uuid
   updatedAt      DateTime     @updatedAt
   updatedBy      String?      @db.Uuid
   project        Project      @relation(fields: [projectId], references: [id])
@@ -493,12 +502,12 @@ model FileStorage {
   url            String?
   size           Float?
   mimeType       String?
-  parentId       String? //
+  parentId       String?
   owner          String?        @db.Uuid
   ownerType      FileOwnerType?
-  isDeleted      Boolean?       @default(false)
+  isDeleted      Boolean        @default(false)
   createdAt      DateTime       @default(now())
-  createdBy      String?        @db.Uuid
+  createdBy      String         @db.Uuid
   deletedAt      DateTime?
   deletedBy      String?        @db.Uuid
   organization   Organization?  @relation(fields: [organizationId], references: [id])
@@ -511,14 +520,14 @@ model Stat {
   type           StatType
   data           Json?         @default("{}")
   userId         String?       @db.Uuid
-  projectId      String?       @db.Uuid
+  projectId      String        @db.Uuid
   organizationId String?       @db.Uuid
   year           Int
   month          Int
   date           Int
   updatedAt      DateTime?     @updatedAt
   user           User?         @relation(fields: [userId], references: [id])
-  project        Project?      @relation(fields: [projectId], references: [id])
+  project        Project       @relation(fields: [projectId], references: [id])
   organization   Organization? @relation(fields: [organizationId], references: [id])
 }
 
@@ -526,9 +535,9 @@ model Dashboard {
   id                  String               @id @default(uuid(7)) @db.Uuid
   dashboardComponents DashboardComponent[]
   title               String?              @default("Untitled")
-  projectId           String?              @db.Uuid
-  isDefault           Boolean?             @default(false)
-  project             Project?             @relation(fields: [projectId], references: [id])
+  projectId           String               @db.Uuid
+  isDefault           Boolean              @default(false)
+  project             Project              @relation(fields: [projectId], references: [id])
 }
 
 model DashboardComponent {
@@ -542,9 +551,9 @@ model DashboardComponent {
   width       Int?                    @default(3)
   height      Int?                    @default(1)
   createdAt   DateTime                @default(now())
-  createdBy   String?
-  deletedAt   DateTime?               @default(now())
-  deletedBy   String?
+  createdBy   String                  @db.Uuid
+  updatedAt   DateTime                @updatedAt
+  updatedBy   String?                 @db.Uuid
   dashboard   Dashboard?              @relation(fields: [dashboardId], references: [id])
 }
 
@@ -556,20 +565,22 @@ model Activity {
   data       Json?              @default("{}")
   createdAt  DateTime           @default(now())
   createdBy  String             @db.Uuid
-  updatedAt  DateTime?          @updatedAt
+  updatedAt  DateTime           @updatedAt
   updatedBy  String?            @db.Uuid
 }
 
 model Comment {
   id        String   @id @default(uuid(7)) @db.Uuid
   taskId    String   @db.Uuid
-  projectId String   @db.Uuid
   content   String
+  projectId String?  @db.Uuid
   createdAt DateTime @default(now())
   createdBy String   @db.Uuid
   updatedAt DateTime @updatedAt
+  updatedBy String?  @db.Uuid
   task      Task     @relation(fields: [taskId], references: [id])
-  project   Project  @relation(fields: [projectId], references: [id])
+  project   Project? @relation(fields: [projectId], references: [id])
+  user      User     @relation(fields: [createdBy], references: [id])
 }
 
 model Application {
@@ -580,9 +591,9 @@ model Application {
   clientSecret   String
   organizationId String       @db.Uuid
   scopes         String[] // Array of permitted scopes
-  createdAt      DateTime?
-  createdBy      String?      @db.Uuid
-  updatedAt      DateTime?    @updatedAt
+  createdAt      DateTime     @default(now())
+  createdBy      String       @db.Uuid
+  updatedAt      DateTime     @updatedAt
   updatedBy      String?      @db.Uuid
   organization   Organization @relation(fields: [organizationId], references: [id])
 }
@@ -609,8 +620,8 @@ model Favorite {
   organizationId String       @db.Uuid
   type           String
   createdAt      DateTime     @default(now())
-  createdBy      String?      @db.Uuid
-  updatedAt      DateTime?    @updatedAt
+  createdBy      String       @db.Uuid
+  updatedAt      DateTime     @updatedAt
   updatedBy      String?      @db.Uuid
   user           User         @relation(fields: [userId], references: [id])
   organization   Organization @relation(fields: [organizationId], references: [id])
