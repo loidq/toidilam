@@ -35,6 +35,7 @@ import {
   GetTaskStatusesQueryHandler,
   GetTasksQueryHandler,
 } from './application/queries/handlers'
+import { TaskCacheService } from './application/services/task-cache.service'
 import {
   TaskChecklistController,
   TaskController,
@@ -85,7 +86,7 @@ const queryHandlers = [
     TaskPointController,
     TaskStatusController,
   ],
-  providers: [...commandHandlers, ...queryHandlers],
-  exports: [],
+  providers: [...commandHandlers, ...queryHandlers, TaskCacheService],
+  exports: [TaskCacheService],
 })
 export class TaskModule {}
