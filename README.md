@@ -1,20 +1,22 @@
 # 🚀 ToiDiLam - Work & Team Performance Management System
 
-<p align="center">
-  <img src="https://nestjs.com/img/logo-small.svg" width="120" alt="NestJS Logo" />
-</p>
+ToiDiLam is a modern, enterprise-grade work and team performance management system built with NestJS, designed for scalability, security, and real-world collaboration.
 
-<p align="center">
-  <strong>A comprehensive work and team performance management system built with NestJS</strong>
-</p>
+---
 
-<p align="center">
-  <a href="https://github.com/nodejs/node"><img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node.js Version" /></a>
-  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/typescript-%5E5.7.0-blue.svg" alt="TypeScript" /></a>
-  <a href="https://nestjs.com/"><img src="https://img.shields.io/badge/nestjs-%5E11.0.0-red.svg" alt="NestJS" /></a>
-  <a href="https://www.prisma.io/"><img src="https://img.shields.io/badge/prisma-%5E6.10.0-2D3748.svg" alt="Prisma" /></a>
-  <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/postgresql-316192.svg" alt="PostgreSQL" /></a>
-</p>
+## 📋 Highlights
+
+- **Modern Architecture:** Domain-Driven Design (DDD), Clean Architecture, CQRS, Repository Pattern
+- **Production-Ready Technologies:** PostgreSQL, Prisma ORM, Redis, JWT, Docker, Swagger
+- **Multi-organization & Multi-project:** Flexible structure for teams and companies
+- **Advanced RBAC & Security:** Granular permissions, JWT authentication, audit trail
+- **Comprehensive Task Management:** Tasks, subtasks, statuses, priorities, automation, timers
+- **Customizable Dashboards & Analytics:** Widgets, performance metrics, individual & team KPIs
+- **Integrated File Storage:** AWS S3, DigitalOcean, soft delete, file permissions
+- **Real-time Collaboration & Notifications:** Activity feeds, reminders, overdue alerts
+- **RESTful API & Swagger:** Auto-generated documentation, OAuth2, webhook support
+- **Testing & CI/CD:** Unit, e2e tests, linting, formatting, automation scripts
+- **Docker & DevOps Ready:** Dockerfile, docker-compose, build/test/deploy scripts
 
 ---
 
