@@ -2,15 +2,36 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs'
 
 import { DashboardPrismaRepository } from '../../../infrastructure/repositories/dashboard-prisma.repository'
+import { DashboardCacheService } from '../../services/dashboard-cache.service'
 import { GetDashboardSummaryQuery } from '../dashboard.queries'
 
 @QueryHandler(GetDashboardSummaryQuery)
 export class GetDashboardSummaryHandler implements IQueryHandler<GetDashboardSummaryQuery> {
-  constructor(private readonly dashboardRepository: DashboardPrismaRepository) {}
+  constructor(
+    private readonly dashboardRepository: DashboardPrismaRepository,
+    private readonly dashboardCacheService: DashboardCacheService,
+  ) {}
 
   async execute(query: GetDashboardSummaryQuery): Promise<number> {
     const { projectIds, statusIds, startDate, endDate, priority, assigneeIds } = query
 
+    // Create cache params
+    const cacheParams = {
+      projectIds,
+      statusIds,
+      startDate: startDate?.toISOString(),
+      endDate: endDate?.toISOString(),
+      priority,
+      assigneeIds,
+    }
+
+    // Try to get from cache first
+    const cachedResult = await this.dashboardCacheService.getCachedDashboardSummary(cacheParams)
+    if (cachedResult !== null) {
+      return cachedResult
+    }
+
+    // If not in cache, execute query
     const where = this.generateQueryCondition({
       projectIds,
       statusIds,
@@ -20,9 +41,14 @@ export class GetDashboardSummaryHandler implements IQueryHandler<GetDashboardSum
       priority,
     })
 
-    return await this.dashboardRepository.count({
+    const result = await this.dashboardRepository.count({
       where,
     })
+
+    // Cache the result
+    await this.dashboardCacheService.cacheDashboardSummary(cacheParams, result)
+
+    return result
   }
 
   private generateQueryCondition = ({
@@ -41,7 +67,7 @@ export class GetDashboardSummaryHandler implements IQueryHandler<GetDashboardSum
     endDate?: Date
     points?: number[]
     priority?: string[]
-  }) => {
+  }): Record<string, unknown> => {
     const where: {
       [key: string]: unknown
     } = {}

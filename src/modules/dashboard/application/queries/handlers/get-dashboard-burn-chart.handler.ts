@@ -5,6 +5,7 @@ import { TaskPrismaRepository } from '@/modules/task/infrastructure/repositories
 
 import { DashboardComponentType } from '../../../domain/enums/dashboard-component-type.enum'
 import { DashboardPrismaRepository } from '../../../infrastructure/repositories/dashboard-prisma.repository'
+import { DashboardCacheService } from '../../services/dashboard-cache.service'
 import { GetDashboardBurnChartQuery } from '../dashboard.queries'
 
 type TDateChart = {
@@ -29,18 +30,28 @@ export class GetDashboardBurnChartQueryHandler
   constructor(
     private readonly dashboardRepository: DashboardPrismaRepository,
     private readonly taskRepository: TaskPrismaRepository,
+    private readonly dashboardCacheService: DashboardCacheService,
   ) {}
 
   async execute(query: GetDashboardBurnChartQuery): Promise<any> {
-    const {
-      startDate,
-      endDate,
+    const { startDate, endDate, projectIds, assigneeIds, type } = query
+
+    // Create cache params
+    const cacheParams = {
+      startDate: startDate?.toISOString(),
+      endDate: endDate?.toISOString(),
       projectIds,
-
       assigneeIds,
-
       type,
-    } = query
+    }
+
+    // Try to get from cache first
+    const cachedResult = await this.dashboardCacheService.getCachedBurnChartData(cacheParams)
+    if (cachedResult) {
+      return cachedResult
+    }
+
+    // If not in cache, execute query
     const where = this.generateQueryCondition({
       startDate,
       endDate,
@@ -74,11 +85,16 @@ export class GetDashboardBurnChartQueryHandler
 
     const formatDate = this.convertDate(endDate, dates.dates)
 
-    return {
+    const result = {
       dates: formatDate,
       ideal,
       actual,
     }
+
+    // Cache the result
+    await this.dashboardCacheService.cacheBurnChartData(cacheParams, result)
+
+    return result
   }
   private generateQueryCondition = ({
     projectIds,
