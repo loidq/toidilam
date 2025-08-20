@@ -1,3 +1,5 @@
+import crypto from 'crypto'
+
 import { Injectable, OnModuleDestroy } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import Redis from 'ioredis'
@@ -239,5 +241,11 @@ export class RedisService implements OnModuleDestroy {
 
   async delRaw(key: string): Promise<number> {
     return await this.client.del(key)
+  }
+
+  async generateCacheKey(prefix: CKEY, params: Record<string, any>): Promise<string> {
+    const sortedParams = JSON.stringify(params, Object.keys(params).sort())
+    const hash = crypto.createHash('md5').update(sortedParams).digest('hex')
+    return `${prefix}_${hash}`
   }
 }

@@ -14,4 +14,17 @@ export enum CKEY {
   FAV_QUERY = 'FAV_QUERY', // Cache danh sách yêu thích
   ORG_STORAGE_SIZE = 'ORG_STORAGE_SIZE', // Cache dung lượng storage tổ chức
   ORG_MAX_STORAGE_SIZE = 'ORG_MAX_STORAGE_SIZE', // Cache giới hạn storage
+  // Dashboard Cache Keys
+  DASHBOARD_SUMMARY = 'DASHBOARD_SUMMARY', // Cache dashboard summary data
+  DASHBOARD_CHART = 'DASHBOARD_CHART', // Cache dashboard chart data
+  DASHBOARD_BURN_CHART = 'DASHBOARD_BURN_CHART', // Cache burn chart data
+  DASHBOARD_COLUMN_CHART = 'DASHBOARD_COLUMN_CHART', // Cache column chart data
+  DASHBOARD_STATS = 'DASHBOARD_STATS', // Cache dashboard statistics
+  // Report Cache Keys
+  PROJECT_REPORT = 'PROJECT_REPORT', // Cache project reports
+  MEMBER_REPORT = 'MEMBER_REPORT', // Cache member reports
+  // Task Cache Keys
+  TASK_LIST = 'TASK_LIST', // Cache task lists
+  TASK_STATUS_LIST = 'TASK_STATUS_LIST', // Cache task status lists
+  TASK_STATS = 'TASK_STATS', // Cache task statistics
 }
